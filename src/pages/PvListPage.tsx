@@ -177,7 +177,7 @@ const PvListPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 surface-elevated p-3">
+      <div className="flex items-center gap-3 surface-glass p-3">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
