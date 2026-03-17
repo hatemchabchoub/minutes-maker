@@ -363,7 +363,7 @@ const DashboardPage = () => {
 
       {/* Comparison bar if available */}
       {stats?.pvTrend !== null && stats?.pvTrend !== undefined && period !== "all" && (
-        <div className="surface-elevated p-4 border flex items-center gap-4">
+        <div className="surface-glass p-4 flex items-center gap-4">
           <div className="flex items-center gap-2">
             {stats.pvTrend >= 0 ? (
               <TrendingUp className="h-5 w-5 text-success" />
