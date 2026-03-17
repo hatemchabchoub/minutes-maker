@@ -567,7 +567,7 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">المخالفون المتكررون</h2>
           {topOffenders && topOffenders.length > 0 ? (
             <div className="space-y-1">
