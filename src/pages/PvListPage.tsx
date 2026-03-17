@@ -239,7 +239,7 @@ const PvListPage = () => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
                   جاري التحميل...
                 </TableCell>
               </TableRow>
