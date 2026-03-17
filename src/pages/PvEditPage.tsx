@@ -143,6 +143,7 @@ const PvEditPage = () => {
       setReferralType(pv.referral_type || "");
       setReferralSourceId(pv.referral_source_id || "");
       setPvType(pv.pv_type || "");
+      setParentPvId((pv as any).parent_pv_id || "");
       setNotes(pv.notes || "");
       setCustomsViolation(pv.customs_violation || false);
       setCurrencyViolation(pv.currency_violation || false);
