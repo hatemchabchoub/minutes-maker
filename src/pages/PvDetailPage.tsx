@@ -91,6 +91,22 @@ const PvDetailPage = () => {
     enabled: !!id,
   });
 
+  // Child PVs (sub-PVs / أضلع)
+  const { data: childPvs } = useQuery({
+    queryKey: ["pv-children", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pv")
+        .select("id, pv_number, pv_type, pv_date, case_status, total_actual_seizure, total_virtual_seizure, total_precautionary_seizure, total_seizure")
+        .eq("parent_pv_id", id!)
+        .order("pv_number");
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
+  const isParentPv = !!(pv && !(pv as any).parent_pv_id && (childPvs?.length || 0) > 0);
+
   const changeStatus = async (newStatus: CaseStatus) => {
     if (!user || !id) return;
     try {
