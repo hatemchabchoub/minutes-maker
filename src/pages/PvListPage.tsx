@@ -152,7 +152,7 @@ const PvListPage = () => {
     pvData.data.every((p: any) => selectedIds.has(p.id));
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 page-enter">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">محاضر التحقيق</h1>
@@ -168,7 +168,7 @@ const PvListPage = () => {
             </Button>
           )}
           <Link to="/pv/new">
-            <Button size="sm">
+            <Button size="sm" className="bg-gradient-to-l from-primary to-primary-glow hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
               <FilePlus className="h-4 w-4" />
               محضر جديد
             </Button>
@@ -177,7 +177,7 @@ const PvListPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 surface-elevated p-3">
+      <div className="flex items-center gap-3 surface-glass p-3">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -206,7 +206,7 @@ const PvListPage = () => {
       </div>
 
       {/* Table */}
-      <div className="surface-elevated">
+      <div className="surface-glass overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

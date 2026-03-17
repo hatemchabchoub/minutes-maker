@@ -7,39 +7,40 @@ interface KpiCardProps {
   icon: LucideIcon;
   trend?: string;
   variant?: "default" | "primary" | "warning" | "success";
+  className?: string;
 }
 
 const variantConfig = {
   default: {
-    card: "",
     icon: "bg-muted text-muted-foreground",
-    border: "border-transparent",
+    border: "border-transparent hover:border-border",
+    glow: "",
   },
   primary: {
-    card: "",
     icon: "bg-primary/10 text-primary",
-    border: "border-primary/30",
+    border: "border-primary/20 hover:border-primary/40",
+    glow: "hover:shadow-primary/10",
   },
   warning: {
-    card: "",
     icon: "bg-accent/10 text-accent-foreground",
-    border: "border-accent/30",
+    border: "border-accent/20 hover:border-accent/40",
+    glow: "hover:shadow-accent/10",
   },
   success: {
-    card: "",
     icon: "bg-success/10 text-success",
-    border: "border-success/30",
+    border: "border-success/20 hover:border-success/40",
+    glow: "hover:shadow-success/10",
   },
 };
 
-export function KpiCard({ label, value, icon: Icon, trend, variant = "default" }: KpiCardProps) {
+export function KpiCard({ label, value, icon: Icon, trend, variant = "default", className }: KpiCardProps) {
   const v = variantConfig[variant];
 
   return (
     <div
       className={cn(
-        "surface-elevated p-5 flex items-start justify-between border transition-all hover:shadow-md group",
-        v.border
+        "surface-glass p-5 flex items-start justify-between transition-all duration-300 hover:shadow-lg group cursor-default glow-ring",
+        v.border, v.glow, className
       )}
     >
       <div className="space-y-1.5">
@@ -51,7 +52,10 @@ export function KpiCard({ label, value, icon: Icon, trend, variant = "default" }
           </p>
         )}
       </div>
-      <div className={cn("p-2.5 rounded-lg transition-transform group-hover:scale-110", v.icon)}>
+      <div className={cn(
+        "p-2.5 rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3",
+        v.icon
+      )}>
         <Icon className="h-5 w-5" />
       </div>
     </div>

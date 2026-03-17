@@ -299,7 +299,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 page-enter">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -333,7 +333,7 @@ const DashboardPage = () => {
               ))}
             </SelectContent>
           </Select>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card px-3 py-2 rounded-lg border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground surface-glass px-3 py-2">
             <Calendar className="h-3.5 w-3.5" />
             {new Date().toLocaleDateString("ar-TN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </div>
@@ -355,15 +355,15 @@ const DashboardPage = () => {
 
       {/* KPI Grid with trends */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="مجموع المحاضر" value={stats?.totalPv || 0} icon={FileText} variant="primary" trend={trendText(stats?.pvTrend ?? null)} />
-        <KpiCard label="المحجوز الكلي (د.ت)" value={fmt(stats?.totalSeizure || 0)} icon={DollarSign} variant="success" trend={trendText(stats?.seizureTrend ?? null)} />
-        <KpiCard label="المخالفون" value={offenderCount || 0} icon={Users} />
-        <KpiCard label="متوسط المحجوز / محضر" value={stats && stats.totalPv > 0 ? fmt(Math.round(stats.totalSeizure / stats.totalPv)) : "—"} icon={TrendingUp} variant="primary" />
+        <KpiCard className="animate-fade-in-up stagger-1" label="مجموع المحاضر" value={stats?.totalPv || 0} icon={FileText} variant="primary" trend={trendText(stats?.pvTrend ?? null)} />
+        <KpiCard className="animate-fade-in-up stagger-2" label="المحجوز الكلي (د.ت)" value={fmt(stats?.totalSeizure || 0)} icon={DollarSign} variant="success" trend={trendText(stats?.seizureTrend ?? null)} />
+        <KpiCard className="animate-fade-in-up stagger-3" label="المخالفون" value={offenderCount || 0} icon={Users} />
+        <KpiCard className="animate-fade-in-up stagger-4" label="متوسط المحجوز / محضر" value={stats && stats.totalPv > 0 ? fmt(Math.round(stats.totalSeizure / stats.totalPv)) : "—"} icon={TrendingUp} variant="primary" />
       </div>
 
       {/* Comparison bar if available */}
       {stats?.pvTrend !== null && stats?.pvTrend !== undefined && period !== "all" && (
-        <div className="surface-elevated p-4 border flex items-center gap-4">
+        <div className="surface-glass p-4 flex items-center gap-4">
           <div className="flex items-center gap-2">
             {stats.pvTrend >= 0 ? (
               <TrendingUp className="h-5 w-5 text-success" />
@@ -395,7 +395,7 @@ const DashboardPage = () => {
       )}
 
       {/* Monthly Trend */}
-      <div className="surface-elevated p-5 border">
+      <div className="surface-glass p-5 animate-fade-in-up stagger-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold">الاتجاه الشهري (12 شهرا)</h2>
           <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
@@ -439,7 +439,7 @@ const DashboardPage = () => {
 
       {/* Row 2: Department + Violations + Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">المحاضر حسب القسم</h2>
           {deptData.length > 0 ? (
             <ResponsiveContainer width="100%" height={Math.max(240, deptData.length * 44)}>
@@ -460,7 +460,7 @@ const DashboardPage = () => {
           )}
         </div>
 
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">أنواع المخالفات</h2>
           {violationDist.length > 0 ? (
             <>
@@ -489,7 +489,7 @@ const DashboardPage = () => {
           )}
         </div>
 
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">حالة الملفات</h2>
           {statusDist.length > 0 ? (
             <>
@@ -528,7 +528,7 @@ const DashboardPage = () => {
 
       {/* Row 3: Recent PVs + Top Offenders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold">آخر المحاضر</h2>
             <button
@@ -567,7 +567,7 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">المخالفون المتكررون</h2>
           {topOffenders && topOffenders.length > 0 ? (
             <div className="space-y-1">
