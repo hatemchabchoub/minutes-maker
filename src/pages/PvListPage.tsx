@@ -58,7 +58,7 @@ const PvListPage = () => {
   }, [statusFilter, search]);
 
   const { data: pvData, isLoading } = useQuery({
-    queryKey: ["pv-list", page, statusFilter, search],
+    queryKey: ["pv-list", page, statusFilter, search, user?.id, profile?.department_id, roles],
     queryFn: async () => {
       let query = supabase
         .from("pv")
@@ -72,6 +72,21 @@ const PvListPage = () => {
         `, { count: "exact" })
         .order("pv_date", { ascending: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+      // Role-based visibility filtering
+      if (isAdmin || isNationalSupervisor) {
+        // Admin and national supervisor see all PVs
+      } else if (isDeptSupervisor || isViewer) {
+        // Department supervisor and viewer see PVs in their department
+        if (profile?.department_id) {
+          query = query.eq("department_id", profile.department_id);
+        }
+      } else if (isOfficer) {
+        // Officer sees only PVs they created
+        if (user?.id) {
+          query = query.eq("created_by", user.id);
+        }
+      }
 
       if (statusFilter !== "all") query = query.eq("case_status", statusFilter);
       if (search) query = query.or(`pv_number.ilike.%${search}%,internal_reference.ilike.%${search}%`);
