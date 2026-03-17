@@ -270,6 +270,15 @@
     height: 0;
     overflow: hidden;
   }
+  /* Make ancestors of print templates visible */
+  #root :has(.print-pv),
+  #root :has(.print-report) {
+    visibility: visible !important;
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
   .print-pv,
   .print-report,
   .print-pv *,
