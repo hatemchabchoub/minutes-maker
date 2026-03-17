@@ -228,10 +228,56 @@
 }
 
 @media print {
-  body {
-    @apply bg-white text-black;
-    font-size: 11pt;
-    line-height: 1.4;
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body {
+    background: white !important;
+    color: black !important;
+    font-size: 10pt;
+    line-height: 1.35;
+    margin: 0;
+    padding: 0;
+    width: 210mm;
+    overflow: visible !important;
+  }
+
+  /* Hide everything except print templates */
+  body > * {
+    display: none !important;
+  }
+
+  .print-pv,
+  .print-report {
+    display: block !important;
+    position: static !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+  }
+
+  /* Ensure parent containers are visible for print templates */
+  body > #root {
+    display: block !important;
+  }
+  #root * {
+    visibility: hidden;
+    position: absolute;
+    height: 0;
+    overflow: hidden;
+  }
+  .print-pv,
+  .print-report,
+  .print-pv *,
+  .print-report * {
+    visibility: visible !important;
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .no-print,
@@ -240,21 +286,20 @@
   header,
   [data-sidebar],
   .TabsList,
-  button {
+  button,
+  .surface-glass,
+  .surface-elevated,
+  .bg-gradient-animated {
     display: none !important;
-  }
-
-  .print-pv,
-  .print-report {
-    display: block !important;
   }
 
   .print-page {
     width: 100%;
-    max-width: 210mm;
+    max-width: 180mm;
     margin: 0 auto;
-    padding: 10mm;
+    padding: 0;
     page-break-after: always;
+    box-sizing: border-box;
   }
 
   .print-page:last-child {
@@ -262,15 +307,45 @@
   }
 
   @page {
-    size: A4;
-    margin: 12mm 15mm;
+    size: A4 portrait;
+    margin: 15mm 15mm 15mm 15mm;
   }
 
   table {
+    width: 100% !important;
+    border-collapse: collapse !important;
     page-break-inside: auto;
+    font-size: 9pt;
+  }
+
+  thead {
+    display: table-header-group;
   }
 
   tr {
     page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  th, td {
+    padding: 2pt 4pt !important;
+    border-bottom: 0.5pt solid #ccc !important;
+  }
+
+  th {
+    border-bottom: 1pt solid #333 !important;
+    font-weight: bold;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  /* Remove glass/shadow effects in print */
+  .surface-glass, .surface-elevated, [class*="backdrop-blur"], [class*="shadow"] {
+    background: white !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: none !important;
   }
 }
