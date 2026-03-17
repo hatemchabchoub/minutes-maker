@@ -391,6 +391,53 @@ const PvDetailPage = () => {
           </div>
         </TabsContent>
 
+        {/* Sub-PVs tab */}
+        {(childPvs?.length || 0) > 0 && (
+          <TabsContent value="sub-pvs" className="mt-4">
+            <div className="surface-elevated">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>النوع</TableHead>
+                    <TableHead>عدد المحضر</TableHead>
+                    <TableHead>التاريخ</TableHead>
+                    <TableHead className="text-end">حجز فعلي</TableHead>
+                    <TableHead className="text-end">حجز صوري</TableHead>
+                    <TableHead className="text-end">حجز تحفظي</TableHead>
+                    <TableHead className="text-end">المجموع</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="w-16">عرض</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {childPvs?.map((c: any) => (
+                    <TableRow key={c.id}>
+                      <TableCell><span className="text-xs px-1.5 py-0.5 rounded bg-accent/10 text-accent-foreground">ضلع</span></TableCell>
+                      <TableCell className="font-mono-data">{c.pv_number}</TableCell>
+                      <TableCell>{c.pv_date}</TableCell>
+                      <TableCell className="text-end font-mono-data">{formatCurrency(Number(c.total_actual_seizure) || 0)}</TableCell>
+                      <TableCell className="text-end font-mono-data">{formatCurrency(Number(c.total_virtual_seizure) || 0)}</TableCell>
+                      <TableCell className="text-end font-mono-data">{formatCurrency(Number(c.total_precautionary_seizure) || 0)}</TableCell>
+                      <TableCell className="text-end font-mono-data font-semibold">{formatCurrency(Number(c.total_seizure) || 0)}</TableCell>
+                      <TableCell><StatusBadge status={c.case_status} /></TableCell>
+                      <TableCell>
+                        <Link to={`/pv/${c.id}`}><Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button></Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+        )}
+
+        {/* Recap tab */}
+        {isParentPv && (
+          <TabsContent value="recap" className="mt-4">
+            <PvRecapSummary parentPvId={id!} />
+          </TabsContent>
+        )}
+
         <TabsContent value="attachments" className="mt-4">
           <div className="surface-elevated p-8 text-center text-sm text-muted-foreground">
             لا توجد مرفقات
