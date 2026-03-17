@@ -228,6 +228,7 @@ const PvEditPage = () => {
         referral_type: referralType || null,
         referral_source_id: referralSourceId || null,
         pv_type: pvType || null,
+        parent_pv_id: pvType === "ضلع" && parentPvId ? parentPvId : null,
         customs_violation: customsViolation,
         currency_violation: currencyViolation,
         public_law_violation: publicLawViolation,
