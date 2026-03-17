@@ -439,7 +439,7 @@ const DashboardPage = () => {
 
       {/* Row 2: Department + Violations + Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">المحاضر حسب القسم</h2>
           {deptData.length > 0 ? (
             <ResponsiveContainer width="100%" height={Math.max(240, deptData.length * 44)}>
