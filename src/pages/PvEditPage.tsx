@@ -60,6 +60,7 @@ const PvEditPage = () => {
   const [referralType, setReferralType] = useState("");
   const [referralSourceId, setReferralSourceId] = useState("");
   const [pvType, setPvType] = useState("");
+  const [parentPvId, setParentPvId] = useState("");
   const [notes, setNotes] = useState("");
   const [customsViolation, setCustomsViolation] = useState(false);
   const [currencyViolation, setCurrencyViolation] = useState(false);
