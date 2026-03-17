@@ -30,6 +30,7 @@ const formatCurrency = (value: number) =>
   new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(value);
 
 const PvListPage = () => {
+  const { user, profile, roles, isAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
@@ -38,6 +39,11 @@ const PvListPage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const queryClient = useQueryClient();
+
+  const isNationalSupervisor = roles.includes("national_supervisor");
+  const isDeptSupervisor = roles.includes("department_supervisor");
+  const isOfficer = roles.includes("officer");
+  const isViewer = roles.includes("viewer");
 
   const handleExport = useCallback(async () => {
     setExporting(true);
