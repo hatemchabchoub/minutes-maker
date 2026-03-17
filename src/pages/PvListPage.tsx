@@ -99,14 +99,20 @@ const PvListPage = () => {
 
   const pvIds = pvData?.data?.map(p => p.id) || [];
 
-  const { data: violationCounts } = useQuery({
-    queryKey: ["violation-counts", pvIds],
+  const { data: violationsByPv } = useQuery({
+    queryKey: ["violation-labels", pvIds],
     enabled: pvIds.length > 0,
     queryFn: async () => {
-      const { data } = await supabase.from("violations").select("pv_id").in("pv_id", pvIds);
-      const counts: Record<string, number> = {};
-      data?.forEach(v => { counts[v.pv_id] = (counts[v.pv_id] || 0) + 1; });
-      return counts;
+      const { data } = await supabase
+        .from("violations")
+        .select("pv_id, violation_label")
+        .in("pv_id", pvIds);
+      const map: Record<string, string[]> = {};
+      data?.forEach(v => {
+        if (!map[v.pv_id]) map[v.pv_id] = [];
+        if (!map[v.pv_id].includes(v.violation_label)) map[v.pv_id].push(v.violation_label);
+      });
+      return map;
     },
   });
 
