@@ -64,14 +64,14 @@ const PvListPage = () => {
       let query = supabase
         .from("pv")
         .select(`
-          id, internal_reference, pv_number, pv_date, case_status, pv_type,
+          id, internal_reference, pv_number, pv_date, case_status, pv_type, parent_pv_id,
           total_actual_seizure, total_virtual_seizure, total_precautionary_seizure, total_seizure,
           customs_violation, currency_violation, public_law_violation, seizure_renewal,
           source_import_type, notes, created_at,
           departments (id, name_fr, name_ar, code),
           officers (id, full_name, badge_number, rank_label)
         `, { count: "exact" })
-        .order("pv_date", { ascending: false })
+        .order("pv_number", { ascending: true })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       // Role-based visibility filtering
