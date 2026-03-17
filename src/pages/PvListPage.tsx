@@ -38,6 +38,7 @@ const PvListPage = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   const isNationalSupervisor = roles.includes("national_supervisor");
