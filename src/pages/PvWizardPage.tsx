@@ -359,6 +359,11 @@ const PvWizardPage = () => {
             </div>
           </div>
 
+          {/* Parent PV selector — shown only when type is ضلع */}
+          {pvType === "ضلع" && (
+            <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} />
+          )}
+
           <div className="space-y-2">
             <Label>التصنيف القانوني</Label>
             <div className="flex flex-wrap gap-6">
