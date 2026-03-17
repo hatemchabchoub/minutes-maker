@@ -119,6 +119,41 @@ const PvListPage = () => {
 
   const totalPages = Math.ceil((pvData?.count || 0) / PAGE_SIZE);
 
+  // Group PVs: parent PVs first, children under them
+  const groupedPvs = (() => {
+    if (!pvData?.data) return [];
+    const all = pvData.data as any[];
+    // Find parent PVs (no parent_pv_id) and child PVs
+    const parents = all.filter(p => !p.parent_pv_id);
+    const childrenMap: Record<string, any[]> = {};
+    all.filter(p => p.parent_pv_id).forEach(p => {
+      if (!childrenMap[p.parent_pv_id]) childrenMap[p.parent_pv_id] = [];
+      childrenMap[p.parent_pv_id].push(p);
+    });
+    // Also handle orphan children (parent not on this page)
+    const orphanChildren = all.filter(p => p.parent_pv_id && !parents.find(pp => pp.id === p.parent_pv_id));
+    
+    const result: { pv: any; isChild: boolean; childCount: number }[] = [];
+    parents.forEach(p => {
+      const children = childrenMap[p.id] || [];
+      result.push({ pv: p, isChild: false, childCount: children.length });
+      if (expandedGroups.has(p.id)) {
+        children.forEach(c => result.push({ pv: c, isChild: true, childCount: 0 }));
+      }
+    });
+    // Add orphans at the end
+    orphanChildren.forEach(c => result.push({ pv: c, isChild: true, childCount: 0 }));
+    return result;
+  })();
+
+  const toggleGroup = (parentId: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(parentId)) next.delete(parentId); else next.add(parentId);
+      return next;
+    });
+  };
+
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
