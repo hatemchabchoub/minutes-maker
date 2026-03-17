@@ -15,6 +15,7 @@ import {
 import {
   FilePlus, Search, Download, Eye, Pencil, Printer, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import { exportPvToExcel } from "@/lib/excel-export";
 
 type CaseStatus = "draft" | "under_review" | "validated" | "archived";
 const PAGE_SIZE = 25;
