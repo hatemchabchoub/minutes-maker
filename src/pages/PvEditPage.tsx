@@ -13,6 +13,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import ParentPvSelector from "@/components/pv/ParentPvSelector";
 
 interface OffenderRow {
   id?: string;
