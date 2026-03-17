@@ -489,7 +489,7 @@ const DashboardPage = () => {
           )}
         </div>
 
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">حالة الملفات</h2>
           {statusDist.length > 0 ? (
             <>
