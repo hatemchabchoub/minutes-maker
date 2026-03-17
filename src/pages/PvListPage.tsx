@@ -1,0 +1,187 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { StatusBadge } from "@/components/StatusBadge";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
+  FilePlus, Search, Download, Eye, Pencil, Printer, ChevronLeft, ChevronRight,
+} from "lucide-react";
+
+type CaseStatus = "draft" | "under_review" | "validated" | "archived";
+const PAGE_SIZE = 25;
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(value);
+
+const PvListPage = () => {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [page, setPage] = useState(0);
+
+  const { data: pvData, isLoading } = useQuery({
+    queryKey: ["pv-list", page, statusFilter, search],
+    queryFn: async () => {
+      let query = supabase
+        .from("pv")
+        .select(`
+          id, internal_reference, pv_number, pv_date, case_status, pv_type,
+          total_actual_seizure, total_virtual_seizure, total_precautionary_seizure, total_seizure,
+          customs_violation, currency_violation, public_law_violation, seizure_renewal,
+          source_import_type, notes, created_at,
+          departments (id, name_fr, name_ar, code),
+          officers (id, full_name, badge_number, rank_label)
+        `, { count: "exact" })
+        .order("pv_date", { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+      if (statusFilter !== "all") query = query.eq("case_status", statusFilter);
+      if (search) query = query.or(`pv_number.ilike.%${search}%,internal_reference.ilike.%${search}%`);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return { data: data || [], count: count || 0 };
+    },
+  });
+
+  const pvIds = pvData?.data?.map(p => p.id) || [];
+
+  const { data: violationCounts } = useQuery({
+    queryKey: ["violation-counts", pvIds],
+    enabled: pvIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("violations").select("pv_id").in("pv_id", pvIds);
+      const counts: Record<string, number> = {};
+      data?.forEach(v => { counts[v.pv_id] = (counts[v.pv_id] || 0) + 1; });
+      return counts;
+    },
+  });
+
+  const totalPages = Math.ceil((pvData?.count || 0) / PAGE_SIZE);
+
+  return (
+    <div className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">محاضر التحقيق</h1>
+          <p className="text-sm text-muted-foreground">
+            {pvData?.count || 0} سجل
+          </p>
+        </div>
+        <Link to="/pv/new">
+          <Button size="sm">
+            <FilePlus className="h-4 w-4" />
+            محضر جديد
+          </Button>
+        </Link>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-3 surface-elevated p-3">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="بحث بعدد المحضر أو المرجع..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+            className="ps-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="الحالة" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">الكل</SelectItem>
+            <SelectItem value="draft">مسودة</SelectItem>
+            <SelectItem value="under_review">قيد المراجعة</SelectItem>
+            <SelectItem value="validated">مصادق عليه</SelectItem>
+            <SelectItem value="archived">مؤرشف</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm">
+          <Download className="h-4 w-4" />
+          تصدير
+        </Button>
+      </div>
+
+      {/* Table */}
+      <div className="surface-elevated">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>المرجع الداخلي</TableHead>
+              <TableHead>عدد المحضر</TableHead>
+              <TableHead>التاريخ</TableHead>
+              <TableHead>القسم</TableHead>
+              <TableHead>الضابط</TableHead>
+              <TableHead className="text-center">المخالفات</TableHead>
+              <TableHead className="text-end">المحجوز الكلي</TableHead>
+              <TableHead>الحالة</TableHead>
+              <TableHead>المصدر</TableHead>
+              <TableHead className="w-[100px]">إجراءات</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                  جاري التحميل...
+                </TableCell>
+              </TableRow>
+            ) : (pvData?.data?.length || 0) === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                  لا توجد سجلات
+                </TableCell>
+              </TableRow>
+            ) : (
+              pvData?.data?.map((pv: any) => (
+                <TableRow key={pv.id}>
+                  <TableCell className="font-mono text-xs font-medium">{pv.internal_reference}</TableCell>
+                  <TableCell className="font-mono text-sm">{pv.pv_number}</TableCell>
+                  <TableCell className="text-sm">{pv.pv_date}</TableCell>
+                  <TableCell className="text-xs max-w-[120px] truncate">{pv.departments?.name_ar || '—'}</TableCell>
+                  <TableCell className="text-xs max-w-[100px] truncate">{pv.officers?.full_name || '—'}</TableCell>
+                  <TableCell className="text-center text-sm">{violationCounts?.[pv.id] || 0}</TableCell>
+                  <TableCell className="text-end font-mono text-sm">{formatCurrency(pv.total_seizure || 0)}</TableCell>
+                  <TableCell><StatusBadge status={pv.case_status as CaseStatus} /></TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{pv.source_import_type || 'يدوي'}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Link to={`/pv/${pv.id}`}><Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button></Link>
+                      <Link to={`/pv/${pv.id}/edit`}><Button variant="ghost" size="icon" className="h-7 w-7"><Pencil className="h-3.5 w-3.5" /></Button></Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+
+        <div className="flex items-center justify-between px-4 py-3 border-t">
+          <p className="text-xs text-muted-foreground">
+            الصفحة {page + 1} من {Math.max(totalPages, 1)}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-7 w-7" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PvListPage;
