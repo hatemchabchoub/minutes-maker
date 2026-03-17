@@ -27,6 +27,19 @@ const PvListPage = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      await exportPvToExcel({ statusFilter, search });
+      toast.success("تم تصدير الملف بنجاح");
+    } catch (err: any) {
+      toast.error(err.message || "خطأ في التصدير");
+    } finally {
+      setExporting(false);
+    }
+  }, [statusFilter, search]);
 
   const { data: pvData, isLoading } = useQuery({
     queryKey: ["pv-list", page, statusFilter, search],
