@@ -285,19 +285,42 @@ const PvListPage = () => {
                   لا توجد سجلات
                 </TableCell>
               </TableRow>
+            ) : groupedPvs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
+                  لا توجد سجلات
+                </TableCell>
+              </TableRow>
             ) : (
-              pvData?.data?.map((pv: any) => (
-                <TableRow key={pv.id} className={selectedIds.has(pv.id) ? "bg-muted/50" : ""}>
+              groupedPvs.map(({ pv, isChild, childCount }) => (
+                <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""}`}>
                   <TableCell>
                     <Checkbox
                       checked={selectedIds.has(pv.id)}
                       onCheckedChange={() => toggleSelect(pv.id)}
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-xs font-medium">{pv.internal_reference}</TableCell>
+                  <TableCell className="font-mono text-xs font-medium">
+                    {isChild && <span className="text-muted-foreground me-1">↳</span>}
+                    {pv.internal_reference}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {!isChild && childCount > 0 && (
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => toggleGroup(pv.id)}>
+                          {expandedGroups.has(pv.id) ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        </Button>
+                      )}
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${pv.pv_type === "ضلع" ? "bg-accent/10 text-accent-foreground" : "bg-primary/10 text-primary"}`}>
+                        {pv.pv_type || "محضر"}
+                      </span>
+                      {!isChild && childCount > 0 && (
+                        <span className="text-[10px] text-muted-foreground">({childCount})</span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-mono text-sm">{pv.pv_number}</TableCell>
                   <TableCell className="text-sm">{pv.pv_date}</TableCell>
-                  <TableCell className="text-xs max-w-[120px] truncate">{pv.departments?.name_ar || '—'}</TableCell>
                   <TableCell className="text-xs max-w-[100px] truncate">{pv.officers?.full_name || '—'}</TableCell>
                   <TableCell className="text-xs max-w-[220px]">
                     {violationsByPv?.[pv.id]?.length ? (
