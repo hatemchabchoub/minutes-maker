@@ -206,7 +206,7 @@ const PvListPage = () => {
       </div>
 
       {/* Table */}
-      <div className="surface-elevated">
+      <div className="surface-glass overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
