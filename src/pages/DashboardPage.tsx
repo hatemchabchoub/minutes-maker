@@ -395,7 +395,7 @@ const DashboardPage = () => {
       )}
 
       {/* Monthly Trend */}
-      <div className="surface-elevated p-5 border">
+      <div className="surface-glass p-5 animate-fade-in-up stagger-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold">الاتجاه الشهري (12 شهرا)</h2>
           <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
