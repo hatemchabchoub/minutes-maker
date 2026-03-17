@@ -152,7 +152,7 @@ const PvListPage = () => {
     pvData.data.every((p: any) => selectedIds.has(p.id));
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 page-enter">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">محاضر التحقيق</h1>
