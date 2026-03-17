@@ -1,11 +1,16 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/components/StatusBadge";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -13,7 +18,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  FilePlus, Search, Download, Eye, Pencil, Printer, ChevronLeft, ChevronRight,
+  FilePlus, Search, Download, Eye, Pencil, Trash2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { exportPvToExcel } from "@/lib/excel-export";
 
@@ -28,6 +33,10 @@ const PvListPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -81,6 +90,45 @@ const PvListPage = () => {
 
   const totalPages = Math.ceil((pvData?.count || 0) / PAGE_SIZE);
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (!pvData?.data) return;
+    const allOnPage = pvData.data.map((p: any) => p.id);
+    const allSelected = allOnPage.every((id: string) => selectedIds.has(id));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      allOnPage.forEach((id: string) => allSelected ? next.delete(id) : next.add(id));
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    setDeleting(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const { error } = await supabase.from("pv").delete().in("id", ids);
+      if (error) throw error;
+      toast.success(`تم حذف ${ids.length} محضر بنجاح`);
+      setSelectedIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ["pv-list"] });
+    } catch (err: any) {
+      toast.error(err.message || "خطأ في الحذف");
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
+  const allOnPageSelected = pvData?.data && pvData.data.length > 0 &&
+    pvData.data.every((p: any) => selectedIds.has(p.id));
+
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -90,12 +138,20 @@ const PvListPage = () => {
             {pvData?.count || 0} سجل
           </p>
         </div>
-        <Link to="/pv/new">
-          <Button size="sm">
-            <FilePlus className="h-4 w-4" />
-            محضر جديد
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+              <Trash2 className="h-4 w-4" />
+              حذف ({selectedIds.size})
+            </Button>
+          )}
+          <Link to="/pv/new">
+            <Button size="sm">
+              <FilePlus className="h-4 w-4" />
+              محضر جديد
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
@@ -132,6 +188,12 @@ const PvListPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allOnPageSelected}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead>المرجع الداخلي</TableHead>
               <TableHead>عدد المحضر</TableHead>
               <TableHead>التاريخ</TableHead>
@@ -147,19 +209,25 @@ const PvListPage = () => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                   جاري التحميل...
                 </TableCell>
               </TableRow>
             ) : (pvData?.data?.length || 0) === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                   لا توجد سجلات
                 </TableCell>
               </TableRow>
             ) : (
               pvData?.data?.map((pv: any) => (
-                <TableRow key={pv.id}>
+                <TableRow key={pv.id} className={selectedIds.has(pv.id) ? "bg-muted/50" : ""}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(pv.id)}
+                      onCheckedChange={() => toggleSelect(pv.id)}
+                    />
+                  </TableCell>
                   <TableCell className="font-mono text-xs font-medium">{pv.internal_reference}</TableCell>
                   <TableCell className="font-mono text-sm">{pv.pv_number}</TableCell>
                   <TableCell className="text-sm">{pv.pv_date}</TableCell>
@@ -195,6 +263,28 @@ const PvListPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف {selectedIds.size} محضر؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "جاري الحذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
