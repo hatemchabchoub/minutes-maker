@@ -333,7 +333,7 @@ const DashboardPage = () => {
               ))}
             </SelectContent>
           </Select>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card px-3 py-2 rounded-lg border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground surface-glass px-3 py-2">
             <Calendar className="h-3.5 w-3.5" />
             {new Date().toLocaleDateString("ar-TN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </div>
