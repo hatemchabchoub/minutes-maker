@@ -227,10 +227,12 @@ const PvListPage = () => {
               <TableHead>التاريخ</TableHead>
               <TableHead>القسم</TableHead>
               <TableHead>الضابط</TableHead>
-              <TableHead className="text-center">المخالفات</TableHead>
-              <TableHead className="text-end">المحجوز الكلي</TableHead>
+              <TableHead className="min-w-[200px]">المخالفات</TableHead>
+              <TableHead className="text-end">حجز فعلي</TableHead>
+              <TableHead className="text-end">حجز وهمي</TableHead>
+              <TableHead className="text-end">حجز تحفظي</TableHead>
+              <TableHead className="text-end">المجموع</TableHead>
               <TableHead>الحالة</TableHead>
-              <TableHead>المصدر</TableHead>
               <TableHead className="w-[100px]">إجراءات</TableHead>
             </TableRow>
           </TableHeader>
