@@ -28,147 +28,171 @@ const statusLabels: Record<string, string> = {
 
 export default function WeeklyReportPrintTemplate({ periodLabel, departmentName, stats, byDept, byOfficer, byStatus }: WeeklyReportData) {
   return (
-    <div className="hidden print:block print-report" dir="rtl">
+    <div className="hidden print:block print-report" dir="rtl" style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif" }}>
       <div className="print-page">
-        {/* Header */}
-        <div className="text-center mb-6 border-b-2 border-foreground pb-4">
-          <p className="text-sm">الجمهورية التونسية — République Tunisienne</p>
-          <p className="text-xs">وزارة المالية — Ministère des Finances</p>
-          <p className="text-base font-bold mt-1">الإدارة العامة للديوانة — Direction Générale des Douanes</p>
-          {departmentName && (
-            <p className="text-sm mt-1 font-medium">{departmentName}</p>
-          )}
-        </div>
+        {/* Header with logo area */}
+        <table style={{ width: "100%", marginBottom: "12pt", borderBottom: "2pt solid #1a1a1a", paddingBottom: "8pt" }}>
+          <tbody>
+            <tr>
+              <td style={{ width: "25%", textAlign: "right", verticalAlign: "top", border: "none", padding: "0" }}>
+                <img src="/logo-douane.png" alt="" style={{ height: "50pt", objectFit: "contain" }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              </td>
+              <td style={{ textAlign: "center", verticalAlign: "middle", border: "none", padding: "0" }}>
+                <div style={{ fontSize: "10pt" }}>الجمهورية التونسية — République Tunisienne</div>
+                <div style={{ fontSize: "8pt", color: "#555" }}>وزارة المالية — Ministère des Finances</div>
+                <div style={{ fontSize: "11pt", fontWeight: "bold", marginTop: "2pt" }}>الإدارة العامة للديوانة — Direction Générale des Douanes</div>
+                {departmentName && (
+                  <div style={{ fontSize: "9pt", marginTop: "2pt", fontWeight: 500 }}>{departmentName}</div>
+                )}
+              </td>
+              <td style={{ width: "25%", textAlign: "left", verticalAlign: "top", border: "none", padding: "0" }}>
+                <div style={{ fontSize: "7pt", color: "#888" }}>
+                  طبع: {new Date().toLocaleDateString("fr-TN")}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         {/* Report title */}
-        <div className="text-center mb-6">
-          <h1 className="text-lg font-bold">التقرير الدوري — Rapport périodique</h1>
-          <p className="text-sm mt-1">{periodLabel}</p>
-          <p className="text-xs text-muted-foreground mt-1">
+        <div style={{ textAlign: "center", marginBottom: "14pt" }}>
+          <h1 style={{ fontSize: "14pt", fontWeight: "bold", margin: "0 0 4pt 0" }}>التقرير الدوري — Rapport périodique</h1>
+          <div style={{ fontSize: "9pt" }}>{periodLabel}</div>
+          <div style={{ fontSize: "7.5pt", color: "#888", marginTop: "2pt" }}>
             تاريخ الطباعة: {new Date().toLocaleDateString("fr-TN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          </div>
         </div>
 
-        {/* KPI Summary */}
-        <div className="mb-6 border border-foreground p-4">
-          <h2 className="text-sm font-bold mb-3 border-b border-foreground pb-1">
-            المؤشرات الرئيسية — Indicateurs clés
-          </h2>
-          <div className="grid grid-cols-4 gap-4 text-xs">
-            <div className="text-center">
-              <p className="text-muted-foreground">مجموع المحاضر</p>
-              <p className="text-xl font-bold font-mono mt-1">{stats.totalPv}</p>
-              <p className="text-muted-foreground text-[10px]">Total PV</p>
-            </div>
-            <div className="text-center">
-              <p className="text-muted-foreground">المحجوز الكلي (د.ت)</p>
-              <p className="text-xl font-bold font-mono mt-1">{fmt(stats.totalSeizure)}</p>
-              <p className="text-muted-foreground text-[10px]">Total saisies</p>
-            </div>
-            <div className="text-center">
-              <p className="text-muted-foreground">المحجوز الفعلي</p>
-              <p className="text-xl font-bold font-mono mt-1">{fmt(stats.totalActual)}</p>
-              <p className="text-muted-foreground text-[10px]">Saisies réelles</p>
-            </div>
-            <div className="text-center">
-              <p className="text-muted-foreground">المحجوز الصوري</p>
-              <p className="text-xl font-bold font-mono mt-1">{fmt(stats.totalVirtual)}</p>
-              <p className="text-muted-foreground text-[10px]">Saisies fictives</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-4 text-xs mt-4 pt-3 border-t border-border">
-            <div className="text-center">
-              <p className="text-muted-foreground">مخالفات ديوانية</p>
-              <p className="text-lg font-bold font-mono">{stats.customs}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-muted-foreground">مخالفات صرفية</p>
-              <p className="text-lg font-bold font-mono">{stats.currency}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-muted-foreground">مخالفات حق عام</p>
-              <p className="text-lg font-bold font-mono">{stats.publicLaw}</p>
-            </div>
-          </div>
-        </div>
+        {/* KPI Summary Box */}
+        <table style={{ width: "100%", border: "1.5pt solid #333", marginBottom: "14pt", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th colSpan={4} style={{ textAlign: "right", fontSize: "9pt", fontWeight: "bold", padding: "4pt 6pt", borderBottom: "1pt solid #333", background: "#f5f5f5" }}>
+                المؤشرات الرئيسية — Indicateurs clés
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "center", padding: "6pt 4pt", width: "25%", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>مجموع المحاضر</div>
+                <div style={{ fontSize: "16pt", fontWeight: "bold", fontFamily: "monospace" }}>{stats.totalPv}</div>
+                <div style={{ fontSize: "6.5pt", color: "#999" }}>Total PV</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "6pt 4pt", width: "25%", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>المحجوز الكلي (د.ت)</div>
+                <div style={{ fontSize: "16pt", fontWeight: "bold", fontFamily: "monospace" }}>{fmt(stats.totalSeizure)}</div>
+                <div style={{ fontSize: "6.5pt", color: "#999" }}>Total saisies</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "6pt 4pt", width: "25%", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>المحجوز الفعلي</div>
+                <div style={{ fontSize: "16pt", fontWeight: "bold", fontFamily: "monospace" }}>{fmt(stats.totalActual)}</div>
+                <div style={{ fontSize: "6.5pt", color: "#999" }}>Saisies réelles</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "6pt 4pt", width: "25%", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>المحجوز الصوري</div>
+                <div style={{ fontSize: "16pt", fontWeight: "bold", fontFamily: "monospace" }}>{fmt(stats.totalVirtual)}</div>
+                <div style={{ fontSize: "6.5pt", color: "#999" }}>Saisies fictives</div>
+              </td>
+            </tr>
+            <tr style={{ borderTop: "0.5pt solid #ccc" }}>
+              <td style={{ textAlign: "center", padding: "4pt", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>مخالفات ديوانية</div>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", fontFamily: "monospace" }}>{stats.customs}</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "4pt", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>مخالفات صرفية</div>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", fontFamily: "monospace" }}>{stats.currency}</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "4pt", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>مخالفات حق عام</div>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", fontFamily: "monospace" }}>{stats.publicLaw}</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "4pt", border: "none" }}>
+                <div style={{ fontSize: "7.5pt", color: "#666" }}>المحجوز التحفظي</div>
+                <div style={{ fontSize: "12pt", fontWeight: "bold", fontFamily: "monospace" }}>{fmt(stats.totalPrecautionary)}</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         {/* Status breakdown */}
-        <div className="mb-6">
-          <h2 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
+        <div style={{ marginBottom: "12pt" }}>
+          <div style={{ fontSize: "9pt", fontWeight: "bold", borderBottom: "1pt solid #333", paddingBottom: "2pt", marginBottom: "4pt" }}>
             توزيع حسب الحالة — Répartition par statut
-          </h2>
-          <div className="flex gap-6 text-xs">
+          </div>
+          <div style={{ display: "flex", gap: "16pt", fontSize: "8pt" }}>
             {Object.entries(byStatus).map(([k, v]) => (
-              <div key={k} className="flex items-center gap-2">
-                <span className="inline-block w-3 h-3 border border-foreground" />
-                <span>{statusLabels[k] || k}: <strong className="font-mono">{v}</strong></span>
+              <div key={k} style={{ display: "flex", alignItems: "center", gap: "4pt" }}>
+                <span style={{ display: "inline-block", width: "8pt", height: "8pt", border: "0.5pt solid #333" }} />
+                <span>{statusLabels[k] || k}: <strong style={{ fontFamily: "monospace" }}>{v}</strong></span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Department table */}
-        <div className="mb-6">
-          <h2 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
+        <div style={{ marginBottom: "12pt" }}>
+          <div style={{ fontSize: "9pt", fontWeight: "bold", borderBottom: "1pt solid #333", paddingBottom: "2pt", marginBottom: "4pt" }}>
             التفصيل حسب القسم — Détail par département
-          </h2>
-          <table className="w-full text-xs border-collapse">
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8pt" }}>
             <thead>
-              <tr className="border-b border-foreground">
-                <th className="py-1 text-start">#</th>
-                <th className="py-1 text-start">القسم — Département</th>
-                <th className="py-1 text-start">Code</th>
-                <th className="py-1 text-end">عدد المحاضر</th>
-                <th className="py-1 text-end">المحجوز (د.ت)</th>
-                <th className="py-1 text-end">%</th>
+              <tr style={{ borderBottom: "1pt solid #333" }}>
+                <th style={{ padding: "3pt 2pt", textAlign: "right" }}>#</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "right" }}>القسم — Département</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "right" }}>Code</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "left" }}>عدد المحاضر</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "left" }}>المحجوز (د.ت)</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "left" }}>%</th>
               </tr>
             </thead>
             <tbody>
               {byDept.map((d, i) => (
-                <tr key={d.code} className="border-b border-border">
-                  <td className="py-1">{i + 1}</td>
-                  <td className="py-1">{d.name}</td>
-                  <td className="py-1 font-mono">{d.code}</td>
-                  <td className="py-1 text-end font-mono">{d.count}</td>
-                  <td className="py-1 text-end font-mono">{fmt(d.seizure)}</td>
-                  <td className="py-1 text-end font-mono">
+                <tr key={d.code} style={{ borderBottom: "0.5pt solid #ddd" }}>
+                  <td style={{ padding: "2pt", fontFamily: "monospace" }}>{i + 1}</td>
+                  <td style={{ padding: "2pt" }}>{d.name}</td>
+                  <td style={{ padding: "2pt", fontFamily: "monospace" }}>{d.code}</td>
+                  <td style={{ padding: "2pt", textAlign: "left", fontFamily: "monospace" }}>{d.count}</td>
+                  <td style={{ padding: "2pt", textAlign: "left", fontFamily: "monospace" }}>{fmt(d.seizure)}</td>
+                  <td style={{ padding: "2pt", textAlign: "left", fontFamily: "monospace" }}>
                     {stats.totalPv > 0 ? ((d.count / stats.totalPv) * 100).toFixed(1) : 0}%
                   </td>
                 </tr>
               ))}
-              <tr className="border-t-2 border-foreground font-bold">
-                <td className="py-1" colSpan={3}>المجموع — Total</td>
-                <td className="py-1 text-end font-mono">{stats.totalPv}</td>
-                <td className="py-1 text-end font-mono">{fmt(stats.totalSeizure)}</td>
-                <td className="py-1 text-end font-mono">100%</td>
+              <tr style={{ borderTop: "1.5pt solid #333", fontWeight: "bold" }}>
+                <td style={{ padding: "3pt 2pt" }} colSpan={3}>المجموع — Total</td>
+                <td style={{ padding: "3pt 2pt", textAlign: "left", fontFamily: "monospace" }}>{stats.totalPv}</td>
+                <td style={{ padding: "3pt 2pt", textAlign: "left", fontFamily: "monospace" }}>{fmt(stats.totalSeizure)}</td>
+                <td style={{ padding: "3pt 2pt", textAlign: "left", fontFamily: "monospace" }}>100%</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         {/* Officer table */}
-        <div className="mb-6">
-          <h2 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
+        <div style={{ marginBottom: "12pt" }}>
+          <div style={{ fontSize: "9pt", fontWeight: "bold", borderBottom: "1pt solid #333", paddingBottom: "2pt", marginBottom: "4pt" }}>
             التفصيل حسب الضابط — Détail par officier
-          </h2>
-          <table className="w-full text-xs border-collapse">
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "8pt" }}>
             <thead>
-              <tr className="border-b border-foreground">
-                <th className="py-1 text-start">#</th>
-                <th className="py-1 text-start">الضابط — Officier</th>
-                <th className="py-1 text-end">عدد المحاضر</th>
-                <th className="py-1 text-end">المحجوز (د.ت)</th>
-                <th className="py-1 text-end">المعدل / محضر</th>
+              <tr style={{ borderBottom: "1pt solid #333" }}>
+                <th style={{ padding: "3pt 2pt", textAlign: "right" }}>#</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "right" }}>الضابط — Officier</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "left" }}>عدد المحاضر</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "left" }}>المحجوز (د.ت)</th>
+                <th style={{ padding: "3pt 2pt", textAlign: "left" }}>المعدل / محضر</th>
               </tr>
             </thead>
             <tbody>
-              {byOfficer.slice(0, 15).map((o, i) => (
-                <tr key={o.name + i} className="border-b border-border">
-                  <td className="py-1">{i + 1}</td>
-                  <td className="py-1">{o.name}</td>
-                  <td className="py-1 text-end font-mono">{o.count}</td>
-                  <td className="py-1 text-end font-mono">{fmt(o.seizure)}</td>
-                  <td className="py-1 text-end font-mono">
+              {byOfficer.slice(0, 20).map((o, i) => (
+                <tr key={o.name + i} style={{ borderBottom: "0.5pt solid #ddd" }}>
+                  <td style={{ padding: "2pt", fontFamily: "monospace" }}>{i + 1}</td>
+                  <td style={{ padding: "2pt" }}>{o.name}</td>
+                  <td style={{ padding: "2pt", textAlign: "left", fontFamily: "monospace" }}>{o.count}</td>
+                  <td style={{ padding: "2pt", textAlign: "left", fontFamily: "monospace" }}>{fmt(o.seizure)}</td>
+                  <td style={{ padding: "2pt", textAlign: "left", fontFamily: "monospace" }}>
                     {o.count > 0 ? fmt(Math.round(o.seizure / o.count)) : "—"}
                   </td>
                 </tr>
@@ -178,19 +202,19 @@ export default function WeeklyReportPrintTemplate({ periodLabel, departmentName,
         </div>
 
         {/* Signatures */}
-        <div className="mt-10 grid grid-cols-2 gap-16 text-xs text-center">
-          <div>
-            <p className="font-medium mb-10">رئيس مصلحة المحاضر</p>
-            <p className="border-t border-foreground pt-1">Chef du service contentieux</p>
+        <div style={{ marginTop: "30pt", display: "flex", justifyContent: "space-between", fontSize: "8pt", textAlign: "center" }}>
+          <div style={{ width: "40%" }}>
+            <div style={{ fontWeight: 500, marginBottom: "40pt" }}>رئيس مصلحة المحاضر</div>
+            <div style={{ borderTop: "0.5pt solid #333", paddingTop: "2pt" }}>Chef du service contentieux</div>
           </div>
-          <div>
-            <p className="font-medium mb-10">المدير الجهوي</p>
-            <p className="border-t border-foreground pt-1">Directeur régional</p>
+          <div style={{ width: "40%" }}>
+            <div style={{ fontWeight: 500, marginBottom: "40pt" }}>المدير الجهوي</div>
+            <div style={{ borderTop: "0.5pt solid #333", paddingTop: "2pt" }}>Directeur régional</div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 pt-3 border-t border-muted-foreground text-[9px] text-muted-foreground flex justify-between">
+        <div style={{ marginTop: "20pt", paddingTop: "4pt", borderTop: "0.5pt solid #999", fontSize: "6.5pt", color: "#888", display: "flex", justifyContent: "space-between" }}>
           <span>طبع بتاريخ: {new Date().toLocaleDateString("fr-TN")}</span>
           <span>النظام الآلي لمتابعة المحاضر — Système SIGMAP</span>
         </div>

@@ -8,234 +8,242 @@ interface PvPrintData {
 const fmt = (v: number) =>
   new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(v);
 
+const S = {
+  page: { fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif" } as React.CSSProperties,
+  sectionTitle: { fontSize: "9pt", fontWeight: "bold" as const, borderBottom: "1pt solid #333", paddingBottom: "2pt", marginBottom: "4pt" },
+  table: { width: "100%", borderCollapse: "collapse" as const, fontSize: "8pt" },
+  th: { padding: "3pt 2pt", textAlign: "right" as const, borderBottom: "1pt solid #333", fontWeight: "bold" as const },
+  thEnd: { padding: "3pt 2pt", textAlign: "left" as const, borderBottom: "1pt solid #333", fontWeight: "bold" as const },
+  td: { padding: "2pt", borderBottom: "0.5pt solid #ddd" },
+  tdEnd: { padding: "2pt", textAlign: "left" as const, fontFamily: "monospace", borderBottom: "0.5pt solid #ddd" },
+  mono: { fontFamily: "monospace" },
+  muted: { color: "#888", fontSize: "7.5pt" },
+};
+
 export default function PvPrintTemplate({ pv, offenders, violations, seizures }: PvPrintData) {
   return (
-    <div className="hidden print:block print-pv" dir="rtl">
-      {/* Page 1 */}
+    <div className="hidden print:block print-pv" dir="rtl" style={S.page}>
       <div className="print-page">
-        {/* Institutional Header */}
-        <div className="text-center mb-6 border-b-2 border-foreground pb-4">
-          <p className="text-sm">الجمهورية التونسية</p>
-          <p className="text-xs">وزارة المالية</p>
-          <p className="text-base font-bold mt-1">الإدارة العامة للديوانة</p>
-          <div className="flex justify-between mt-3 text-xs">
-            <div className="text-start">
-              <p>القسم: {(pv as any).departments?.name_ar || "—"}</p>
-              <p>الضابط: {(pv as any).officers?.full_name || "—"}</p>
-              <p>الرتبة: {(pv as any).officers?.rank_label || "—"}</p>
-            </div>
-            <div className="text-end" dir="ltr">
-              <p>République Tunisienne</p>
-              <p>Ministère des Finances</p>
-              <p className="font-semibold">Direction Générale des Douanes</p>
-            </div>
-          </div>
-        </div>
+        {/* Header */}
+        <table style={{ width: "100%", marginBottom: "10pt", borderBottom: "2pt solid #1a1a1a", paddingBottom: "6pt" }}>
+          <tbody>
+            <tr>
+              <td style={{ width: "30%", textAlign: "right", verticalAlign: "top", border: "none", padding: "0" }}>
+                <img src="/logo-douane.png" alt="" style={{ height: "45pt", objectFit: "contain" }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <div style={{ fontSize: "7.5pt", marginTop: "4pt" }}>
+                  <div>القسم: {pv.departments?.name_ar || "—"}</div>
+                  <div>الضابط: {pv.officers?.full_name || "—"}</div>
+                  <div>الرتبة: {pv.officers?.rank_label || "—"}</div>
+                </div>
+              </td>
+              <td style={{ textAlign: "center", verticalAlign: "middle", border: "none", padding: "0" }}>
+                <div style={{ fontSize: "9pt" }}>الجمهورية التونسية</div>
+                <div style={{ fontSize: "7.5pt", color: "#555" }}>وزارة المالية</div>
+                <div style={{ fontSize: "11pt", fontWeight: "bold", marginTop: "2pt" }}>الإدارة العامة للديوانة</div>
+              </td>
+              <td style={{ width: "30%", textAlign: "left", verticalAlign: "top", border: "none", padding: "0" }} dir="ltr">
+                <div style={{ fontSize: "9pt" }}>République Tunisienne</div>
+                <div style={{ fontSize: "7.5pt", color: "#555" }}>Ministère des Finances</div>
+                <div style={{ fontSize: "10pt", fontWeight: 600 }}>Direction Générale des Douanes</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         {/* PV Title */}
-        <div className="text-center mb-6">
-          <h1 className="text-lg font-bold">
+        <div style={{ textAlign: "center", marginBottom: "12pt" }}>
+          <h1 style={{ fontSize: "13pt", fontWeight: "bold", margin: "0" }}>
             {pv.pv_type === "ضلع" ? "ضلع حجز" : "محضر حجز"}
           </h1>
-          <h2 className="text-base font-bold mt-1" dir="ltr">
+          <h2 style={{ fontSize: "11pt", fontWeight: "bold", margin: "2pt 0 0 0" }} dir="ltr">
             {pv.pv_type === "ضلع" ? "Aile de saisie" : "Procès-verbal de saisie"}
           </h2>
-          <div className="flex justify-center gap-8 mt-3 text-sm">
-            <span>عدد: <strong className="font-mono">{pv.pv_number}</strong></span>
-            <span>المرجع: <strong className="font-mono" dir="ltr">{pv.internal_reference}</strong></span>
+          <div style={{ display: "flex", justifyContent: "center", gap: "20pt", marginTop: "6pt", fontSize: "9pt" }}>
+            <span>عدد: <strong style={S.mono}>{pv.pv_number}</strong></span>
+            <span>المرجع: <strong style={S.mono} dir="ltr">{pv.internal_reference}</strong></span>
             <span>التاريخ: <strong>{pv.pv_date}</strong></span>
           </div>
         </div>
 
         {/* Legal Classification */}
-        <div className="mb-5">
-          <h3 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
-            التصنيف القانوني — Classification juridique
-          </h3>
-          <div className="grid grid-cols-4 gap-2 text-xs">
+        <div style={{ marginBottom: "10pt" }}>
+          <div style={S.sectionTitle}>التصنيف القانوني — Classification juridique</div>
+          <div style={{ display: "flex", gap: "12pt", fontSize: "8pt", flexWrap: "wrap" }}>
             {[
-              ["مخالفة ديوانية", "Infraction douanière", pv.customs_violation],
-              ["مخالفة صرفية", "Infraction de change", pv.currency_violation],
-              ["مخالفة حق عام", "Droit commun", pv.public_law_violation],
-              ["تجديد حجز", "Renouvellement", pv.seizure_renewal],
-            ].map(([ar, fr, val]) => (
-              <div key={String(ar)} className="flex items-center gap-1">
-                <span className="inline-block w-3 h-3 border border-foreground text-center leading-3 text-[8px]">
+              ["مخالفة ديوانية", pv.customs_violation],
+              ["مخالفة صرفية", pv.currency_violation],
+              ["مخالفة حق عام", pv.public_law_violation],
+              ["تجديد حجز", pv.seizure_renewal],
+            ].map(([label, val]) => (
+              <div key={String(label)} style={{ display: "flex", alignItems: "center", gap: "3pt" }}>
+                <span style={{ display: "inline-block", width: "8pt", height: "8pt", border: "0.5pt solid #333", textAlign: "center", lineHeight: "8pt", fontSize: "6pt" }}>
                   {val ? "✓" : ""}
                 </span>
-                <span>{String(ar)}</span>
+                <span>{String(label)}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Referral */}
-        <div className="mb-5">
-          <h3 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
-            الإحالة — Saisine
-          </h3>
-          <div className="grid grid-cols-2 gap-4 text-xs">
-            <div>
-              <span className="text-muted-foreground">طبيعة الإحالة: </span>
-              <strong>{pv.referral_type || "—"}</strong>
-            </div>
-            <div>
-              <span className="text-muted-foreground">الحالة: </span>
-              <strong>{pv.case_status || "—"}</strong>
-            </div>
+        <div style={{ marginBottom: "10pt" }}>
+          <div style={S.sectionTitle}>الإحالة — Saisine</div>
+          <div style={{ display: "flex", gap: "20pt", fontSize: "8pt" }}>
+            <div><span style={{ color: "#666" }}>طبيعة الإحالة: </span><strong>{pv.referral_type || "—"}</strong></div>
+            <div><span style={{ color: "#666" }}>الحالة: </span><strong>{pv.case_status || "—"}</strong></div>
           </div>
         </div>
 
         {/* Offenders */}
-        <div className="mb-5">
-          <h3 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
-            المخالفون — Contrevenants ({offenders.length})
-          </h3>
-          <table className="w-full text-xs border-collapse">
+        <div style={{ marginBottom: "10pt" }}>
+          <div style={S.sectionTitle}>المخالفون — Contrevenants ({offenders.length})</div>
+          <table style={S.table}>
             <thead>
-              <tr className="border-b border-foreground">
-                <th className="py-1 text-start">#</th>
-                <th className="py-1 text-start">الإسم أو الشركة — Nom</th>
-                <th className="py-1 text-start">المعرف — Identifiant</th>
-                <th className="py-1 text-start">النوع — Type</th>
-                <th className="py-1 text-start">العنوان — Adresse</th>
+              <tr>
+                <th style={S.th}>#</th>
+                <th style={S.th}>الإسم أو الشركة</th>
+                <th style={S.th}>المعرف</th>
+                <th style={S.th}>النوع</th>
+                <th style={S.th}>العنوان</th>
               </tr>
             </thead>
             <tbody>
               {offenders.map((o, i) => (
-                <tr key={o.id} className="border-b border-border">
-                  <td className="py-1">{i + 1}</td>
-                  <td className="py-1 font-medium">{o.name_or_company}</td>
-                  <td className="py-1 font-mono">{o.identifier || "—"}</td>
-                  <td className="py-1">{o.person_type === "physical" ? "شخص طبيعي" : "شخص معنوي"}</td>
-                  <td className="py-1">{[o.address, o.city].filter(Boolean).join(", ") || "—"}</td>
+                <tr key={o.id}>
+                  <td style={S.td}>{i + 1}</td>
+                  <td style={{ ...S.td, fontWeight: 500 }}>{o.name_or_company}</td>
+                  <td style={{ ...S.td, ...S.mono }}>{o.identifier || "—"}</td>
+                  <td style={S.td}>{o.person_type === "physical" ? "شخص طبيعي" : "شخص معنوي"}</td>
+                  <td style={S.td}>{[o.address, o.city].filter(Boolean).join(", ") || "—"}</td>
                 </tr>
               ))}
               {offenders.length === 0 && (
-                <tr><td colSpan={5} className="py-2 text-center text-muted-foreground">—</td></tr>
+                <tr><td colSpan={5} style={{ ...S.td, textAlign: "center", color: "#999" }}>—</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         {/* Violations */}
-        <div className="mb-5">
-          <h3 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
-            المخالفات — Infractions ({violations.length})
-          </h3>
-          <table className="w-full text-xs border-collapse">
+        <div style={{ marginBottom: "10pt" }}>
+          <div style={S.sectionTitle}>المخالفات — Infractions ({violations.length})</div>
+          <table style={S.table}>
             <thead>
-              <tr className="border-b border-foreground">
-                <th className="py-1 text-start">#</th>
-                <th className="py-1 text-start">المخالفة — Infraction</th>
-                <th className="py-1 text-start">الصنف — Catégorie</th>
-                <th className="py-1 text-start">الأساس القانوني — Base légale</th>
+              <tr>
+                <th style={S.th}>#</th>
+                <th style={S.th}>المخالفة</th>
+                <th style={S.th}>الصنف</th>
+                <th style={S.th}>الأساس القانوني</th>
               </tr>
             </thead>
             <tbody>
               {violations.map((v, i) => (
-                <tr key={v.id} className="border-b border-border">
-                  <td className="py-1">{i + 1}</td>
-                  <td className="py-1 font-medium">{v.violation_label}</td>
-                  <td className="py-1">{v.violation_category || "—"}</td>
-                  <td className="py-1">{v.legal_basis || "—"}</td>
+                <tr key={v.id}>
+                  <td style={S.td}>{i + 1}</td>
+                  <td style={{ ...S.td, fontWeight: 500 }}>{v.violation_label}</td>
+                  <td style={S.td}>{v.violation_category || "—"}</td>
+                  <td style={S.td}>{v.legal_basis || "—"}</td>
                 </tr>
               ))}
               {violations.length === 0 && (
-                <tr><td colSpan={4} className="py-2 text-center text-muted-foreground">—</td></tr>
+                <tr><td colSpan={4} style={{ ...S.td, textAlign: "center", color: "#999" }}>—</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         {/* Seizures */}
-        <div className="mb-5">
-          <h3 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
-            المحجوزات — Saisies ({seizures.length})
-          </h3>
-          <table className="w-full text-xs border-collapse">
+        <div style={{ marginBottom: "10pt" }}>
+          <div style={S.sectionTitle}>المحجوزات — Saisies ({seizures.length})</div>
+          <table style={S.table}>
             <thead>
-              <tr className="border-b border-foreground">
-                <th className="py-1 text-start">الصنف</th>
-                <th className="py-1 text-start">النوع</th>
-                <th className="py-1 text-end">الكمية</th>
-                <th className="py-1 text-start">الوحدة</th>
-                <th className="py-1 text-end">القيمة (د.ت)</th>
-                <th className="py-1 text-start">نوع الحجز</th>
+              <tr>
+                <th style={S.th}>الصنف</th>
+                <th style={S.th}>النوع</th>
+                <th style={S.thEnd}>الكمية</th>
+                <th style={S.th}>الوحدة</th>
+                <th style={S.thEnd}>القيمة (د.ت)</th>
+                <th style={S.th}>نوع الحجز</th>
               </tr>
             </thead>
             <tbody>
               {seizures.map((s) => (
-                <tr key={s.id} className="border-b border-border">
-                  <td className="py-1">{s.goods_category || "—"}</td>
-                  <td className="py-1">{s.goods_type || "—"}</td>
-                  <td className="py-1 text-end font-mono">{Number(s.quantity).toLocaleString()}</td>
-                  <td className="py-1">{s.unit || "—"}</td>
-                  <td className="py-1 text-end font-mono">{fmt(Number(s.estimated_value) || 0)}</td>
-                  <td className="py-1">
+                <tr key={s.id}>
+                  <td style={S.td}>{s.goods_category || "—"}</td>
+                  <td style={S.td}>{s.goods_type || "—"}</td>
+                  <td style={S.tdEnd}>{Number(s.quantity).toLocaleString()}</td>
+                  <td style={S.td}>{s.unit || "—"}</td>
+                  <td style={S.tdEnd}>{fmt(Number(s.estimated_value) || 0)}</td>
+                  <td style={S.td}>
                     {s.seizure_type === "actual" ? "فعلي" : s.seizure_type === "virtual" ? "صوري" : s.seizure_type === "precautionary" ? "تحفظي" : "—"}
                   </td>
                 </tr>
               ))}
               {seizures.length === 0 && (
-                <tr><td colSpan={6} className="py-2 text-center text-muted-foreground">—</td></tr>
+                <tr><td colSpan={6} style={{ ...S.td, textAlign: "center", color: "#999" }}>—</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         {/* Seizure Summary */}
-        <div className="mb-8 border border-foreground p-3">
-          <h3 className="text-sm font-bold mb-2">ملخص المحجوزات — Récapitulatif</h3>
-          <div className="grid grid-cols-4 gap-4 text-xs">
-            <div>
-              <span className="text-muted-foreground">المحجوز الفعلي: </span>
-              <strong className="font-mono">{fmt(Number(pv.total_actual_seizure) || 0)}</strong>
-            </div>
-            <div>
-              <span className="text-muted-foreground">المحجوز الصوري: </span>
-              <strong className="font-mono">{fmt(Number(pv.total_virtual_seizure) || 0)}</strong>
-            </div>
-            <div>
-              <span className="text-muted-foreground">المحجوز التحفظي: </span>
-              <strong className="font-mono">{fmt(Number(pv.total_precautionary_seizure) || 0)}</strong>
-            </div>
-            <div>
-              <span className="text-muted-foreground">المجموع الكلي: </span>
-              <strong className="font-mono text-base">{fmt(Number(pv.total_seizure) || 0)} د.ت</strong>
-            </div>
-          </div>
-        </div>
+        <table style={{ width: "100%", border: "1.5pt solid #333", marginBottom: "12pt", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th colSpan={4} style={{ textAlign: "right", fontSize: "9pt", fontWeight: "bold", padding: "3pt 6pt", borderBottom: "1pt solid #333", background: "#f5f5f5" }}>
+                ملخص المحجوزات — Récapitulatif
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "center", padding: "4pt", fontSize: "8pt", width: "25%", border: "none" }}>
+                <div style={{ color: "#666" }}>المحجوز الفعلي</div>
+                <div style={{ fontWeight: "bold", fontFamily: "monospace", fontSize: "10pt" }}>{fmt(Number(pv.total_actual_seizure) || 0)}</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "4pt", fontSize: "8pt", width: "25%", border: "none" }}>
+                <div style={{ color: "#666" }}>المحجوز الصوري</div>
+                <div style={{ fontWeight: "bold", fontFamily: "monospace", fontSize: "10pt" }}>{fmt(Number(pv.total_virtual_seizure) || 0)}</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "4pt", fontSize: "8pt", width: "25%", border: "none" }}>
+                <div style={{ color: "#666" }}>المحجوز التحفظي</div>
+                <div style={{ fontWeight: "bold", fontFamily: "monospace", fontSize: "10pt" }}>{fmt(Number(pv.total_precautionary_seizure) || 0)}</div>
+              </td>
+              <td style={{ textAlign: "center", padding: "4pt", fontSize: "8pt", width: "25%", border: "none" }}>
+                <div style={{ color: "#666" }}>المجموع الكلي</div>
+                <div style={{ fontWeight: "bold", fontFamily: "monospace", fontSize: "12pt" }}>{fmt(Number(pv.total_seizure) || 0)} د.ت</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         {/* Notes */}
         {pv.notes && (
-          <div className="mb-8">
-            <h3 className="text-sm font-bold border-b border-foreground pb-1 mb-2">
-              ملاحظات — Observations
-            </h3>
-            <p className="text-xs whitespace-pre-wrap">{pv.notes}</p>
+          <div style={{ marginBottom: "12pt" }}>
+            <div style={S.sectionTitle}>ملاحظات — Observations</div>
+            <div style={{ fontSize: "8pt", whiteSpace: "pre-wrap" }}>{pv.notes}</div>
           </div>
         )}
 
         {/* Signatures */}
-        <div className="mt-12 grid grid-cols-3 gap-8 text-xs text-center">
-          <div>
-            <p className="font-medium mb-12">الضابط المحرر</p>
-            <p className="border-t border-foreground pt-1">Agent verbalisateur</p>
-            <p className="mt-1 text-muted-foreground">{(pv as any).officers?.full_name || ""}</p>
+        <div style={{ marginTop: "28pt", display: "flex", justifyContent: "space-between", fontSize: "8pt", textAlign: "center" }}>
+          <div style={{ width: "30%" }}>
+            <div style={{ fontWeight: 500, marginBottom: "36pt" }}>الضابط المحرر</div>
+            <div style={{ borderTop: "0.5pt solid #333", paddingTop: "2pt" }}>Agent verbalisateur</div>
+            <div style={{ marginTop: "2pt", color: "#666", fontSize: "7pt" }}>{pv.officers?.full_name || ""}</div>
           </div>
-          <div>
-            <p className="font-medium mb-12">رئيس القسم</p>
-            <p className="border-t border-foreground pt-1">Chef de division</p>
+          <div style={{ width: "30%" }}>
+            <div style={{ fontWeight: 500, marginBottom: "36pt" }}>رئيس القسم</div>
+            <div style={{ borderTop: "0.5pt solid #333", paddingTop: "2pt" }}>Chef de division</div>
           </div>
-          <div>
-            <p className="font-medium mb-12">المدير الجهوي</p>
-            <p className="border-t border-foreground pt-1">Directeur régional</p>
+          <div style={{ width: "30%" }}>
+            <div style={{ fontWeight: 500, marginBottom: "36pt" }}>المدير الجهوي</div>
+            <div style={{ borderTop: "0.5pt solid #333", paddingTop: "2pt" }}>Directeur régional</div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 pt-3 border-t border-muted-foreground text-[9px] text-muted-foreground flex justify-between">
+        <div style={{ marginTop: "16pt", paddingTop: "4pt", borderTop: "0.5pt solid #999", fontSize: "6.5pt", color: "#888", display: "flex", justifyContent: "space-between" }}>
           <span>طبع بتاريخ: {new Date().toLocaleDateString("fr-TN")}</span>
           <span>المرجع: {pv.internal_reference}</span>
           <span>النظام الآلي لمتابعة المحاضر — Système SIGMAP</span>
