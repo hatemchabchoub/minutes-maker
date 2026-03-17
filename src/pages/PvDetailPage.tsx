@@ -216,11 +216,17 @@ const PvDetailPage = () => {
       </div>
 
       <Tabs defaultValue="overview">
-        <TabsList className="no-print">
+        <TabsList className="no-print flex-wrap">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
           <TabsTrigger value="offenders">المخالفون ({offenders?.length || 0})</TabsTrigger>
           <TabsTrigger value="violations">المخالفات ({violations?.length || 0})</TabsTrigger>
           <TabsTrigger value="seizures">المحجوزات ({seizures?.length || 0})</TabsTrigger>
+          {(childPvs?.length || 0) > 0 && (
+            <TabsTrigger value="sub-pvs">الأضلع ({childPvs?.length || 0})</TabsTrigger>
+          )}
+          {isParentPv && (
+            <TabsTrigger value="recap">الفهرس التجميعي</TabsTrigger>
+          )}
           <TabsTrigger value="attachments">المرفقات</TabsTrigger>
           <TabsTrigger value="audit">السجل ({auditLogs?.length || 0})</TabsTrigger>
         </TabsList>
