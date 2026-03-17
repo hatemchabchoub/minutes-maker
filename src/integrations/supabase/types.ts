@@ -451,6 +451,7 @@ export type Database = {
           internal_reference: string
           notes: string | null
           officer_id: string | null
+          parent_pv_id: string | null
           priority_level: string | null
           public_law_violation: boolean | null
           pv_date: string
@@ -480,6 +481,7 @@ export type Database = {
           internal_reference: string
           notes?: string | null
           officer_id?: string | null
+          parent_pv_id?: string | null
           priority_level?: string | null
           public_law_violation?: boolean | null
           pv_date?: string
@@ -509,6 +511,7 @@ export type Database = {
           internal_reference?: string
           notes?: string | null
           officer_id?: string | null
+          parent_pv_id?: string | null
           priority_level?: string | null
           public_law_violation?: boolean | null
           pv_date?: string
@@ -540,6 +543,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pv_parent_pv_id_fkey"
+            columns: ["parent_pv_id"]
+            isOneToOne: false
+            referencedRelation: "pv"
             referencedColumns: ["id"]
           },
           {

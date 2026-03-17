@@ -19,12 +19,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  FilePlus, Search, Download, Eye, Pencil, Trash2, ChevronLeft, ChevronRight,
+  FilePlus, Search, Download, Eye, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { exportPvToExcel } from "@/lib/excel-export";
 
 type CaseStatus = "draft" | "under_review" | "validated" | "archived";
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 50;
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(value);
@@ -38,6 +38,7 @@ const PvListPage = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   const isNationalSupervisor = roles.includes("national_supervisor");
@@ -63,14 +64,14 @@ const PvListPage = () => {
       let query = supabase
         .from("pv")
         .select(`
-          id, internal_reference, pv_number, pv_date, case_status, pv_type,
+          id, internal_reference, pv_number, pv_date, case_status, pv_type, parent_pv_id,
           total_actual_seizure, total_virtual_seizure, total_precautionary_seizure, total_seizure,
           customs_violation, currency_violation, public_law_violation, seizure_renewal,
           source_import_type, notes, created_at,
           departments (id, name_fr, name_ar, code),
           officers (id, full_name, badge_number, rank_label)
         `, { count: "exact" })
-        .order("pv_date", { ascending: false })
+        .order("pv_number", { ascending: true })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       // Role-based visibility filtering
@@ -117,6 +118,41 @@ const PvListPage = () => {
   });
 
   const totalPages = Math.ceil((pvData?.count || 0) / PAGE_SIZE);
+
+  // Group PVs: parent PVs first, children under them
+  const groupedPvs = (() => {
+    if (!pvData?.data) return [];
+    const all = pvData.data as any[];
+    // Find parent PVs (no parent_pv_id) and child PVs
+    const parents = all.filter(p => !p.parent_pv_id);
+    const childrenMap: Record<string, any[]> = {};
+    all.filter(p => p.parent_pv_id).forEach(p => {
+      if (!childrenMap[p.parent_pv_id]) childrenMap[p.parent_pv_id] = [];
+      childrenMap[p.parent_pv_id].push(p);
+    });
+    // Also handle orphan children (parent not on this page)
+    const orphanChildren = all.filter(p => p.parent_pv_id && !parents.find(pp => pp.id === p.parent_pv_id));
+    
+    const result: { pv: any; isChild: boolean; childCount: number }[] = [];
+    parents.forEach(p => {
+      const children = childrenMap[p.id] || [];
+      result.push({ pv: p, isChild: false, childCount: children.length });
+      if (expandedGroups.has(p.id)) {
+        children.forEach(c => result.push({ pv: c, isChild: true, childCount: 0 }));
+      }
+    });
+    // Add orphans at the end
+    orphanChildren.forEach(c => result.push({ pv: c, isChild: true, childCount: 0 }));
+    return result;
+  })();
+
+  const toggleGroup = (parentId: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(parentId)) next.delete(parentId); else next.add(parentId);
+      return next;
+    });
+  };
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -223,9 +259,9 @@ const PvListPage = () => {
                 />
               </TableHead>
               <TableHead>المرجع الداخلي</TableHead>
+              <TableHead>النوع</TableHead>
               <TableHead>عدد المحضر</TableHead>
               <TableHead>التاريخ</TableHead>
-              <TableHead>القسم</TableHead>
               <TableHead>الضابط</TableHead>
               <TableHead className="min-w-[200px]">المخالفات</TableHead>
               <TableHead className="text-end">حجز فعلي</TableHead>
@@ -249,19 +285,42 @@ const PvListPage = () => {
                   لا توجد سجلات
                 </TableCell>
               </TableRow>
+            ) : groupedPvs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
+                  لا توجد سجلات
+                </TableCell>
+              </TableRow>
             ) : (
-              pvData?.data?.map((pv: any) => (
-                <TableRow key={pv.id} className={selectedIds.has(pv.id) ? "bg-muted/50" : ""}>
+              groupedPvs.map(({ pv, isChild, childCount }) => (
+                <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""}`}>
                   <TableCell>
                     <Checkbox
                       checked={selectedIds.has(pv.id)}
                       onCheckedChange={() => toggleSelect(pv.id)}
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-xs font-medium">{pv.internal_reference}</TableCell>
+                  <TableCell className="font-mono text-xs font-medium">
+                    {isChild && <span className="text-muted-foreground me-1">↳</span>}
+                    {pv.internal_reference}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {!isChild && childCount > 0 && (
+                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => toggleGroup(pv.id)}>
+                          {expandedGroups.has(pv.id) ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        </Button>
+                      )}
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${pv.pv_type === "ضلع" ? "bg-accent/10 text-accent-foreground" : "bg-primary/10 text-primary"}`}>
+                        {pv.pv_type || "محضر"}
+                      </span>
+                      {!isChild && childCount > 0 && (
+                        <span className="text-[10px] text-muted-foreground">({childCount})</span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-mono text-sm">{pv.pv_number}</TableCell>
                   <TableCell className="text-sm">{pv.pv_date}</TableCell>
-                  <TableCell className="text-xs max-w-[120px] truncate">{pv.departments?.name_ar || '—'}</TableCell>
                   <TableCell className="text-xs max-w-[100px] truncate">{pv.officers?.full_name || '—'}</TableCell>
                   <TableCell className="text-xs max-w-[220px]">
                     {violationsByPv?.[pv.id]?.length ? (

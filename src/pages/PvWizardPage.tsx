@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, ArrowLeft, ArrowRight, Save, Check, AlertCircle } from "lucide-react";
+import ParentPvSelector from "@/components/pv/ParentPvSelector";
 import { toast } from "sonner";
 
 const steps = [
@@ -67,6 +68,7 @@ const PvWizardPage = () => {
   const [referralType, setReferralType] = useState("");
   const [referralSourceId, setReferralSourceId] = useState("");
   const [pvType, setPvType] = useState("");
+  const [parentPvId, setParentPvId] = useState("");
   const [notes, setNotes] = useState("");
   const [customsViolation, setCustomsViolation] = useState(false);
   const [currencyViolation, setCurrencyViolation] = useState(false);
@@ -194,6 +196,7 @@ const PvWizardPage = () => {
         department_id: departmentId || null, officer_id: officerId || null,
         referral_type: referralType || null, referral_source_id: referralSourceId || null,
         pv_type: pvType || null, case_status: status,
+        parent_pv_id: pvType === "ضلع" && parentPvId ? parentPvId : null,
         customs_violation: customsViolation, currency_violation: currencyViolation,
         public_law_violation: publicLawViolation, seizure_renewal: seizureRenewal,
         total_actual_seizure: totalActual, total_virtual_seizure: totalVirtual,
@@ -357,6 +360,11 @@ const PvWizardPage = () => {
               </Select>
             </div>
           </div>
+
+          {/* Parent PV selector — shown only when type is ضلع */}
+          {pvType === "ضلع" && (
+            <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} />
+          )}
 
           <div className="space-y-2">
             <Label>التصنيف القانوني</Label>

@@ -13,6 +13,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import ParentPvSelector from "@/components/pv/ParentPvSelector";
 
 interface OffenderRow {
   id?: string;
@@ -59,6 +60,7 @@ const PvEditPage = () => {
   const [referralType, setReferralType] = useState("");
   const [referralSourceId, setReferralSourceId] = useState("");
   const [pvType, setPvType] = useState("");
+  const [parentPvId, setParentPvId] = useState("");
   const [notes, setNotes] = useState("");
   const [customsViolation, setCustomsViolation] = useState(false);
   const [currencyViolation, setCurrencyViolation] = useState(false);
@@ -141,6 +143,7 @@ const PvEditPage = () => {
       setReferralType(pv.referral_type || "");
       setReferralSourceId(pv.referral_source_id || "");
       setPvType(pv.pv_type || "");
+      setParentPvId((pv as any).parent_pv_id || "");
       setNotes(pv.notes || "");
       setCustomsViolation(pv.customs_violation || false);
       setCurrencyViolation(pv.currency_violation || false);
@@ -225,6 +228,7 @@ const PvEditPage = () => {
         referral_type: referralType || null,
         referral_source_id: referralSourceId || null,
         pv_type: pvType || null,
+        parent_pv_id: pvType === "ضلع" && parentPvId ? parentPvId : null,
         customs_violation: customsViolation,
         currency_violation: currencyViolation,
         public_law_violation: publicLawViolation,
@@ -374,6 +378,9 @@ const PvEditPage = () => {
             </Select>
           </div>
         </div>
+        {pvType === "ضلع" && (
+          <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} />
+        )}
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-2 text-sm"><Checkbox checked={customsViolation} onCheckedChange={(v) => setCustomsViolation(!!v)} />مخالفة ديوانية</label>
           <label className="flex items-center gap-2 text-sm"><Checkbox checked={currencyViolation} onCheckedChange={(v) => setCurrencyViolation(!!v)} />مخالفة صرفية</label>
