@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, ArrowLeft, ArrowRight, Save, Check, AlertCircle } from "lucide-react";
+import ParentPvSelector from "@/components/pv/ParentPvSelector";
 import { toast } from "sonner";
 
 const steps = [
