@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 import {
   FilePlus, Search, Download, Eye, Pencil, Printer, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import { exportPvToExcel } from "@/lib/excel-export";
 
 type CaseStatus = "draft" | "under_review" | "validated" | "archived";
 const PAGE_SIZE = 25;
@@ -25,6 +27,19 @@ const PvListPage = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      await exportPvToExcel({ statusFilter, search });
+      toast.success("تم تصدير الملف بنجاح");
+    } catch (err: any) {
+      toast.error(err.message || "خطأ في التصدير");
+    } finally {
+      setExporting(false);
+    }
+  }, [statusFilter, search]);
 
   const { data: pvData, isLoading } = useQuery({
     queryKey: ["pv-list", page, statusFilter, search],
@@ -106,9 +121,9 @@ const PvListPage = () => {
             <SelectItem value="archived">مؤرشف</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
           <Download className="h-4 w-4" />
-          تصدير
+          {exporting ? "جاري التصدير..." : "تصدير"}
         </Button>
       </div>
 
