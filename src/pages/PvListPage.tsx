@@ -24,7 +24,7 @@ import {
 import { exportPvToExcel } from "@/lib/excel-export";
 
 type CaseStatus = "draft" | "under_review" | "validated" | "archived";
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 50;
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(value);
