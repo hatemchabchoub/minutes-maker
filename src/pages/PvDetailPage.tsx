@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import PvPrintTemplate from "@/components/print/PvPrintTemplate";
+import PvRecapSummary from "@/components/pv/PvRecapSummary";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,7 +17,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Printer, Pencil, FileDown, Trash2, CheckCircle, Clock, Archive } from "lucide-react";
+import { ArrowLeft, Printer, Pencil, FileDown, Trash2, CheckCircle, Clock, Archive, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 const formatCurrency = (v: number) =>
