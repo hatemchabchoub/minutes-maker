@@ -263,10 +263,20 @@ const PvListPage = () => {
                   <TableCell className="text-sm">{pv.pv_date}</TableCell>
                   <TableCell className="text-xs max-w-[120px] truncate">{pv.departments?.name_ar || '—'}</TableCell>
                   <TableCell className="text-xs max-w-[100px] truncate">{pv.officers?.full_name || '—'}</TableCell>
-                  <TableCell className="text-center text-sm">{violationCounts?.[pv.id] || 0}</TableCell>
-                  <TableCell className="text-end font-mono text-sm">{formatCurrency(pv.total_seizure || 0)}</TableCell>
+                  <TableCell className="text-xs max-w-[220px]">
+                    {violationsByPv?.[pv.id]?.length ? (
+                      <div className="space-y-0.5">
+                        {violationsByPv[pv.id].map((label, i) => (
+                          <span key={i} className="inline-block bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[11px] me-1 mb-0.5">{label}</span>
+                        ))}
+                      </div>
+                    ) : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                  <TableCell className="text-end font-mono text-sm">{formatCurrency(pv.total_actual_seizure || 0)}</TableCell>
+                  <TableCell className="text-end font-mono text-sm">{formatCurrency(pv.total_virtual_seizure || 0)}</TableCell>
+                  <TableCell className="text-end font-mono text-sm">{formatCurrency(pv.total_precautionary_seizure || 0)}</TableCell>
+                  <TableCell className="text-end font-mono text-sm font-semibold">{formatCurrency(pv.total_seizure || 0)}</TableCell>
                   <TableCell><StatusBadge status={pv.case_status as CaseStatus} /></TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{pv.source_import_type || 'يدوي'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Link to={`/pv/${pv.id}`}><Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button></Link>
