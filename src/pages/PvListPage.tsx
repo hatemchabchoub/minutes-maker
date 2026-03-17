@@ -245,7 +245,7 @@ const PvListPage = () => {
               </TableRow>
             ) : (pvData?.data?.length || 0) === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={13} className="text-center text-muted-foreground py-8">
                   لا توجد سجلات
                 </TableCell>
               </TableRow>
