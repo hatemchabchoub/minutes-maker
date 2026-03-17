@@ -460,7 +460,7 @@ const DashboardPage = () => {
           )}
         </div>
 
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <h2 className="text-sm font-semibold mb-4">أنواع المخالفات</h2>
           {violationDist.length > 0 ? (
             <>
