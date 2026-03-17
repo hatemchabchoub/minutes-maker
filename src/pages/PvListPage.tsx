@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +30,7 @@ const formatCurrency = (value: number) =>
   new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(value);
 
 const PvListPage = () => {
+  const { user, profile, roles, isAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
@@ -37,6 +39,11 @@ const PvListPage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const queryClient = useQueryClient();
+
+  const isNationalSupervisor = roles.includes("national_supervisor");
+  const isDeptSupervisor = roles.includes("department_supervisor");
+  const isOfficer = roles.includes("officer");
+  const isViewer = roles.includes("viewer");
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -51,7 +58,7 @@ const PvListPage = () => {
   }, [statusFilter, search]);
 
   const { data: pvData, isLoading } = useQuery({
-    queryKey: ["pv-list", page, statusFilter, search],
+    queryKey: ["pv-list", page, statusFilter, search, user?.id, profile?.department_id, roles],
     queryFn: async () => {
       let query = supabase
         .from("pv")
@@ -65,6 +72,21 @@ const PvListPage = () => {
         `, { count: "exact" })
         .order("pv_date", { ascending: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+      // Role-based visibility filtering
+      if (isAdmin || isNationalSupervisor) {
+        // Admin and national supervisor see all PVs
+      } else if (isDeptSupervisor || isViewer) {
+        // Department supervisor and viewer see PVs in their department
+        if (profile?.department_id) {
+          query = query.eq("department_id", profile.department_id);
+        }
+      } else if (isOfficer) {
+        // Officer sees only PVs they created
+        if (user?.id) {
+          query = query.eq("created_by", user.id);
+        }
+      }
 
       if (statusFilter !== "all") query = query.eq("case_status", statusFilter);
       if (search) query = query.or(`pv_number.ilike.%${search}%,internal_reference.ilike.%${search}%`);
