@@ -168,7 +168,7 @@ const PvListPage = () => {
             </Button>
           )}
           <Link to="/pv/new">
-            <Button size="sm">
+            <Button size="sm" className="bg-gradient-to-l from-primary to-primary-glow hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
               <FilePlus className="h-4 w-4" />
               محضر جديد
             </Button>
