@@ -528,7 +528,7 @@ const DashboardPage = () => {
 
       {/* Row 3: Recent PVs + Top Offenders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="surface-elevated p-5 border">
+        <div className="surface-glass p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold">آخر المحاضر</h2>
             <button
