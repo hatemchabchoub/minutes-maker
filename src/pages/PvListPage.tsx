@@ -121,9 +121,9 @@ const PvListPage = () => {
             <SelectItem value="archived">مؤرشف</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
           <Download className="h-4 w-4" />
-          تصدير
+          {exporting ? "جاري التصدير..." : "تصدير"}
         </Button>
       </div>
 
