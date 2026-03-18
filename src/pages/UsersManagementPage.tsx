@@ -172,18 +172,12 @@ export default function UsersManagementPage() {
         .eq("id", user.id);
       if (profileErr) throw profileErr;
 
-      const { error: delErr } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", user.auth_user_id);
-      if (delErr) throw delErr;
-
-      if (roles.length > 0) {
-        const { error: insErr } = await supabase
-          .from("user_roles")
-          .insert(roles.map((role) => ({ user_id: user.auth_user_id, role })));
-        if (insErr) throw insErr;
-      }
+      // Use security definer function to update roles atomically
+      const { error: rolesErr } = await supabase.rpc("admin_update_user_roles", {
+        _target_user_id: user.auth_user_id,
+        _roles: roles,
+      });
+      if (rolesErr) throw rolesErr;
     },
     onSuccess: () => {
       toast.success("تم تحديث المستخدم بنجاح");
