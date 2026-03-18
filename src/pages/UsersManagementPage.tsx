@@ -217,12 +217,18 @@ export default function UsersManagementPage() {
 
   const handleSave = () => {
     if (!editUser) return;
-    const selectedFonctionData = fonctions?.find((f) => f.id === selectedFonction);
-    const mappedRole = (selectedFonctionData?.mapped_role as AppRole) || "officer";
+    // If no roles manually selected, fall back to fonction's mapped role
+    let rolesToSave = selectedRoles;
+    if (rolesToSave.length === 0 && selectedFonction && selectedFonction !== "none") {
+      const selectedFonctionData = fonctions?.find((f) => f.id === selectedFonction);
+      const mappedRole = (selectedFonctionData?.mapped_role as AppRole) || "officer";
+      rolesToSave = [mappedRole];
+    }
     saveMutation.mutate({
       user: editUser,
-      roles: [mappedRole],
+      roles: rolesToSave,
       departmentId: selectedDept === "none" ? null : selectedDept || null,
+      unitId: selectedUnit === "none" ? null : selectedUnit || null,
       active: userActive,
     });
   };
