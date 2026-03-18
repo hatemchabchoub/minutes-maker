@@ -155,10 +155,17 @@ const PvListPage = () => {
   const { data: officers } = useQuery({
     queryKey: ["officers-list"],
     queryFn: async () => {
-      const { data } = await supabase.from("officers").select("id, full_name").eq("active", true).order("full_name");
+      const { data } = await supabase.from("officers").select("id, full_name, department_id").eq("active", true).order("full_name");
       return data || [];
     },
   });
+
+  // Filter officers by selected department
+  const filteredOfficers = useMemo(() => {
+    if (!officers) return [];
+    if (deptFilter === "all") return officers;
+    return officers.filter(o => o.department_id === deptFilter);
+  }, [officers, deptFilter]);
 
   const { data: pvData, isLoading } = useQuery({
     queryKey: ["pv-list", page, statusFilter, typeFilter, deptFilter, officerFilter, search, sortCol, sortDir, user?.id, profile?.department_id, roles],
@@ -339,7 +346,7 @@ const PvListPage = () => {
             </SelectContent>
           </Select>
 
-          <Select value={deptFilter} onValueChange={(v) => { setDeptFilter(v); setPage(0); }}>
+          <Select value={deptFilter} onValueChange={(v) => { setDeptFilter(v); setOfficerFilter("all"); setPage(0); }}>
             <SelectTrigger className="w-44">
               <SelectValue placeholder="القسم" />
             </SelectTrigger>
@@ -357,7 +364,7 @@ const PvListPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">كل الضباط</SelectItem>
-              {officers?.map(o => (
+              {filteredOfficers?.map(o => (
                 <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
               ))}
             </SelectContent>
