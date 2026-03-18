@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import ParentPvSelector from "@/components/pv/ParentPvSelector";
+import { AutocompleteWithAdd, AutocompleteOption } from "@/components/ui/autocomplete-with-add";
 
 interface OffenderRow {
   id?: string;
