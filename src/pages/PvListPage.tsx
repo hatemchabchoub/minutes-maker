@@ -245,6 +245,10 @@ const PvListPage = () => {
           <Download className="h-4 w-4" />
           {exporting ? "جاري التصدير..." : "تصدير"}
         </Button>
+        <Button variant="outline" size="sm" onClick={() => window.print()}>
+          <Printer className="h-4 w-4" />
+          طباعة
+        </Button>
       </div>
 
       {/* Table */}
