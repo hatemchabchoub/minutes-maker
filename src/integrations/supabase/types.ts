@@ -218,6 +218,33 @@ export type Database = {
           },
         ]
       }
+      fonctions: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          label_ar: string
+          label_fr: string | null
+          mapped_role: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          label_ar: string
+          label_fr?: string | null
+          mapped_role?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          label_ar?: string
+          label_fr?: string | null
+          mapped_role?: string | null
+        }
+        Relationships: []
+      }
       goods_reference: {
         Row: {
           active: boolean | null
