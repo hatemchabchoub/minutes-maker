@@ -83,7 +83,7 @@ const officerColumns: ColumnDef[] = [
   { key: "full_name", label: "الاسم الكامل", required: true },
   { key: "badge_number", label: "رقم الشارة" },
   { key: "rank_label", label: "الرتبة" },
-  { key: "fonction", label: "الوظيفة", type: "select", options: FONCTION_OPTIONS },
+  { key: "fonction", label: "الوظيفة", type: "select" },
   { key: "department_id", label: "القسم", type: "select", hidden: true },
   { key: "auth_user_id", label: "حساب المستخدم", type: "select" },
   { key: "active", label: "الحالة", type: "boolean" },
