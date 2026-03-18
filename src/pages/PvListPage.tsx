@@ -133,14 +133,14 @@ const PvListPage = () => {
   const handleExport = useCallback(async () => {
     setExporting(true);
     try {
-      await exportPvToExcel({ statusFilter, search });
+      await exportPvToExcel({ statusFilter, search, typeFilter, deptFilter, officerFilter });
       toast.success("تم تصدير الملف بنجاح");
     } catch (err: any) {
       toast.error(err.message || "خطأ في التصدير");
     } finally {
       setExporting(false);
     }
-  }, [statusFilter, search]);
+  }, [statusFilter, search, typeFilter, deptFilter, officerFilter]);
 
   // Fetch departments for filter
   const { data: departments } = useQuery({
