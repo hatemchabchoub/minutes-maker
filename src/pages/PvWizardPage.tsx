@@ -189,7 +189,10 @@ const PvWizardPage = () => {
     const updated = [...violations]; updated[i] = { ...updated[i], [field]: value }; setViolations(updated);
   };
   const updateSeizure = (i: number, field: keyof Seizure, value: string) => {
-    const updated = [...seizures]; updated[i] = { ...updated[i], [field]: value }; setSeizures(updated);
+    setSeizures(prev => { const updated = [...prev]; updated[i] = { ...updated[i], [field]: value }; return updated; });
+  };
+  const updateSeizureMulti = (i: number, fields: Partial<Seizure>) => {
+    setSeizures(prev => { const updated = [...prev]; updated[i] = { ...updated[i], ...fields }; return updated; });
   };
 
   const formatCurrency = (v: number) => new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(v);
@@ -611,10 +614,7 @@ const PvWizardPage = () => {
                   <Label className="text-xs">الصنف</Label>
                   <AutocompleteWithAdd
                     value={s.goods_category}
-                    onChange={(val) => {
-                      updateSeizure(i, "goods_category", val);
-                      updateSeizure(i, "goods_type", "");
-                    }}
+                    onChange={(val) => updateSeizureMulti(i, { goods_category: val, goods_type: "" })}
                     options={goodsCategoryOptions}
                     placeholder="ابحث عن صنف البضاعة..."
                     addDialogTitle="إضافة صنف بضاعة جديد"
