@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Search, UserCog, ShieldCheck, Eye, EyeOff, Copy } from "lucide-react";
 
 type AppRole = "admin" | "national_supervisor" | "department_supervisor" | "officer" | "viewer";
