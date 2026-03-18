@@ -544,9 +544,11 @@ const PvWizardPage = () => {
                     onSelect={(opt) => {
                       const ref = violationRefs?.find(r => r.id === opt.id);
                       if (ref) {
-                        updateViolation(i, "violation_label", ref.label_ar || ref.label_fr);
-                        if (ref.category) updateViolation(i, "violation_category", ref.category);
-                        if (ref.legal_basis) updateViolation(i, "legal_basis", ref.legal_basis);
+                        updateViolationMulti(i, {
+                          violation_label: ref.label_ar || ref.label_fr,
+                          ...(ref.category ? { violation_category: ref.category } : {}),
+                          ...(ref.legal_basis ? { legal_basis: ref.legal_basis } : {}),
+                        });
                       }
                     }}
                     options={violationOptions}
