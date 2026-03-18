@@ -258,10 +258,10 @@ const PvListPage = () => {
                   onCheckedChange={toggleSelectAll}
                 />
               </TableHead>
-              <TableHead>القسم</TableHead>
               <TableHead>النوع</TableHead>
               <TableHead>عدد المحضر</TableHead>
               <TableHead>التاريخ</TableHead>
+              <TableHead>القسم</TableHead>
               <TableHead>الضابط</TableHead>
               <TableHead className="min-w-[200px]">المخالفات</TableHead>
               <TableHead className="text-end">حجز فعلي</TableHead>
@@ -300,10 +300,6 @@ const PvListPage = () => {
                       onCheckedChange={() => toggleSelect(pv.id)}
                     />
                   </TableCell>
-                  <TableCell className="text-xs">
-                    {isChild && <span className="text-muted-foreground me-1">↳</span>}
-                    {(pv as any).departments?.name_ar || (pv as any).departments?.name_fr || "—"}
-                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {!isChild && childCount > 0 && (
@@ -321,6 +317,10 @@ const PvListPage = () => {
                   </TableCell>
                   <TableCell className="font-mono text-sm">{pv.pv_number}</TableCell>
                   <TableCell className="text-sm">{pv.pv_date}</TableCell>
+                  <TableCell className="text-xs">
+                    {isChild && <span className="text-muted-foreground me-1">↳</span>}
+                    {(pv as any).departments?.name_ar || (pv as any).departments?.name_fr || "—"}
+                  </TableCell>
                   <TableCell className="text-xs max-w-[100px] truncate">{pv.officers?.full_name || '—'}</TableCell>
                   <TableCell className="text-xs max-w-[220px]">
                     {violationsByPv?.[pv.id]?.length ? (
