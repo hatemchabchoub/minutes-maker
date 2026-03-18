@@ -642,7 +642,7 @@ const PvWizardPage = () => {
                   <AutocompleteWithAdd
                     value={s.goods_type}
                     onChange={(val) => updateSeizure(i, "goods_type", val)}
-                    options={goodsTypeOptions}
+                    options={getGoodsTypeOptions(s.goods_category)}
                     placeholder="ابحث عن نوع البضاعة..."
                     addDialogTitle="إضافة نوع بضاعة جديد"
                     addFields={[
