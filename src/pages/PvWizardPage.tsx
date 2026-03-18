@@ -414,7 +414,7 @@ const PvWizardPage = () => {
                     label_fr: vals.label_fr, label_ar: vals.label_ar,
                   }).select("id, label_fr, label_ar").single();
                   if (error) { toast.error(error.message); throw error; }
-                  await refetchReferralSources();
+                  await refreshAllRefs();
                   setReferralSourceId(data.id);
                   setReferralSourceLabel(data.label_ar || data.label_fr);
                   toast.success("تمت إضافة مصدر الإحالة");
