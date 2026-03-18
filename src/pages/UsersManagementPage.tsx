@@ -88,6 +88,20 @@ export default function UsersManagementPage() {
     },
   });
 
+  // Fetch units
+  const { data: units } = useQuery({
+    queryKey: ["units"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("units")
+        .select("id, name_fr, name_ar, code, department_id")
+        .eq("active", true)
+        .order("name_fr");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Fetch all users with roles + officer data
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
