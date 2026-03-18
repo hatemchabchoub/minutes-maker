@@ -167,100 +167,43 @@ const LoginPage = () => {
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="grid w-full grid-cols-2 mb-4 bg-background/50 backdrop-blur-sm">
-              <TabsTrigger value="login" className="data-[state=active]:bg-card/90 data-[state=active]:shadow-sm transition-all">تسجيل الدخول</TabsTrigger>
-              <TabsTrigger value="signup" className="data-[state=active]:bg-card/90 data-[state=active]:shadow-sm transition-all">إنشاء حساب</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login" className="animate-fade-in">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">البريد الإلكتروني</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="agent@douane.gov.tn"
-                    required
-                    className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password">كلمة المرور</Label>
-                    <button
-                      type="button"
-                      className="text-xs text-primary hover:underline transition-colors"
-                      onClick={() => setForgotMode(true)}
-                    >
-                      نسيت كلمة المرور؟
-                    </button>
-                  </div>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
-                  />
-                </div>
-                <Button type="submit" className="w-full bg-gradient-to-l from-primary to-primary-glow hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 h-10" disabled={loading}>
-                  {loading ? "جاري الدخول..." : "تسجيل الدخول"}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup" className="animate-fade-in">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">الاسم الكامل</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="الاسم واللقب"
-                    required
-                    className="bg-background/50 backdrop-blur-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">البريد الإلكتروني</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="agent@douane.gov.tn"
-                    required
-                    className="bg-background/50 backdrop-blur-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">كلمة المرور</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="6 أحرف على الأقل"
-                    required
-                    minLength={6}
-                    className="bg-background/50 backdrop-blur-sm"
-                  />
-                </div>
-                <Button type="submit" className="w-full bg-gradient-to-l from-primary to-primary-glow hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 h-10" disabled={loading}>
-                  {loading ? "جاري الإنشاء..." : "إنشاء حساب"}
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  سيتم إرسال بريد تأكيد إلى عنوانك.
-                </p>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleLogin} className="space-y-4 animate-fade-in">
+            <div className="space-y-2">
+              <Label htmlFor="login-email">البريد الإلكتروني</Label>
+              <Input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="agent@douane.gov.tn"
+                required
+                className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="login-password">كلمة المرور</Label>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline transition-colors"
+                  onClick={() => setForgotMode(true)}
+                >
+                  نسيت كلمة المرور؟
+                </button>
+              </div>
+              <Input
+                id="login-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
+              />
+            </div>
+            <Button type="submit" className="w-full bg-gradient-to-l from-primary to-primary-glow hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 h-10" disabled={loading}>
+              {loading ? "جاري الدخول..." : "تسجيل الدخول"}
+            </Button>
+          </form>
         </div>
       </div>
       <footer className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-muted-foreground/50">
