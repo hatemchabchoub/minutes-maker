@@ -530,7 +530,7 @@ const DashboardPage = () => {
         <MiniSeizureCard label="المحجوز التحفظي" value={stats?.totalPrecautionary || 0} color={CHART_COLORS[2]} icon={AlertTriangle} />
         <div className="surface-elevated p-4 border-2 border-primary bg-primary/5 rounded-xl flex items-center gap-3 ring-2 ring-primary/20 shadow-lg">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/15">
-            <DollarSign className="h-5 w-5 text-primary" />
+            <Banknote className="h-5 w-5 text-primary" />
           </div>
           <div>
             <p className="text-[10px] text-primary font-semibold tracking-wide">المجموع الكلي (د.ت)</p>
