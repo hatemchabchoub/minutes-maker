@@ -346,9 +346,11 @@ export type Database = {
       officers: {
         Row: {
           active: boolean | null
+          auth_user_id: string | null
           badge_number: string | null
           created_at: string | null
           department_id: string | null
+          fonction: string | null
           full_name: string
           id: string
           rank_label: string | null
@@ -356,9 +358,11 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          auth_user_id?: string | null
           badge_number?: string | null
           created_at?: string | null
           department_id?: string | null
+          fonction?: string | null
           full_name: string
           id?: string
           rank_label?: string | null
@@ -366,9 +370,11 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          auth_user_id?: string | null
           badge_number?: string | null
           created_at?: string | null
           department_id?: string | null
+          fonction?: string | null
           full_name?: string
           id?: string
           rank_label?: string | null
