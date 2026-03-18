@@ -375,14 +375,32 @@ const PvWizardPage = () => {
             </div>
             <div className="space-y-2">
               <Label>مصدر الإحالة</Label>
-              <Select value={referralSourceId} onValueChange={setReferralSourceId}>
-                <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
-                <SelectContent>
-                  {referralSources?.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.label_ar || r.label_fr}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <AutocompleteWithAdd
+                value={referralSourceLabel}
+                onChange={(val) => {
+                  setReferralSourceLabel(val);
+                  const match = referralSources?.find(r => (r.label_ar || r.label_fr) === val);
+                  setReferralSourceId(match?.id || "");
+                }}
+                onSelect={(opt) => { setReferralSourceId(opt.id); setReferralSourceLabel(opt.label); }}
+                options={referralOptions}
+                placeholder="ابحث عن مصدر الإحالة..."
+                addDialogTitle="إضافة مصدر إحالة جديد"
+                addFields={[
+                  { key: "label_ar", label: "الاسم بالعربية", required: true },
+                  { key: "label_fr", label: "الاسم بالفرنسية", required: true },
+                ]}
+                onAddNew={async (vals) => {
+                  const { data, error } = await supabase.from("referral_sources").insert({
+                    label_fr: vals.label_fr, label_ar: vals.label_ar,
+                  }).select("id, label_fr, label_ar").single();
+                  if (error) { toast.error(error.message); throw error; }
+                  await refetchReferralSources();
+                  setReferralSourceId(data.id);
+                  setReferralSourceLabel(data.label_ar || data.label_fr);
+                  toast.success("تمت إضافة مصدر الإحالة");
+                }}
+              />
             </div>
             <div className="space-y-2">
               <Label>نوع الوثيقة</Label>
