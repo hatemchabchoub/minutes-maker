@@ -604,11 +604,57 @@ const PvWizardPage = () => {
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">الصنف</Label>
-                  <Input value={s.goods_category} onChange={(e) => updateSeizure(i, "goods_category", e.target.value)} />
+                  <AutocompleteWithAdd
+                    value={s.goods_category}
+                    onChange={(val) => updateSeizure(i, "goods_category", val)}
+                    options={goodsCategoryOptions}
+                    placeholder="ابحث عن صنف البضاعة..."
+                    addDialogTitle="إضافة صنف بضاعة جديد"
+                    addFields={[
+                      { key: "category_ar", label: "الصنف بالعربية", required: true },
+                      { key: "category_fr", label: "الصنف بالفرنسية", required: true },
+                      { key: "type_ar", label: "النوع بالعربية" },
+                      { key: "type_fr", label: "النوع بالفرنسية" },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { error } = await supabase.from("goods_reference").insert({
+                        category_fr: vals.category_fr, category_ar: vals.category_ar,
+                        type_fr: vals.type_fr || null, type_ar: vals.type_ar || null,
+                      });
+                      if (error) { toast.error(error.message); throw error; }
+                      await refetchGoodsRefs();
+                      updateSeizure(i, "goods_category", vals.category_ar || vals.category_fr);
+                      if (vals.type_ar) updateSeizure(i, "goods_type", vals.type_ar);
+                      toast.success("تمت إضافة صنف البضاعة");
+                    }}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">نوع البضاعة</Label>
-                  <Input value={s.goods_type} onChange={(e) => updateSeizure(i, "goods_type", e.target.value)} />
+                  <AutocompleteWithAdd
+                    value={s.goods_type}
+                    onChange={(val) => updateSeizure(i, "goods_type", val)}
+                    options={goodsTypeOptions}
+                    placeholder="ابحث عن نوع البضاعة..."
+                    addDialogTitle="إضافة نوع بضاعة جديد"
+                    addFields={[
+                      { key: "category_ar", label: "الصنف بالعربية", required: true },
+                      { key: "category_fr", label: "الصنف بالفرنسية", required: true },
+                      { key: "type_ar", label: "النوع بالعربية", required: true },
+                      { key: "type_fr", label: "النوع بالفرنسية", required: true },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { error } = await supabase.from("goods_reference").insert({
+                        category_fr: vals.category_fr, category_ar: vals.category_ar,
+                        type_fr: vals.type_fr, type_ar: vals.type_ar,
+                      });
+                      if (error) { toast.error(error.message); throw error; }
+                      await refetchGoodsRefs();
+                      updateSeizure(i, "goods_type", vals.type_ar || vals.type_fr);
+                      if (vals.category_ar) updateSeizure(i, "goods_category", vals.category_ar);
+                      toast.success("تمت إضافة نوع البضاعة");
+                    }}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">نوع الحجز</Label>
