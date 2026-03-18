@@ -17,14 +17,13 @@ const ROLE_LABELS: Record<AppRole, string> = {
 
 const ALL_ROLES: AppRole[] = ["admin", "national_supervisor", "department_supervisor", "officer", "viewer"];
 
-const FONCTION_OPTIONS = [
-  { value: "رئيس فرقة", label: "رئيس فرقة" },
-  { value: "مفتش", label: "مفتش" },
-  { value: "عون", label: "عون" },
-  { value: "رئيس مكتب", label: "رئيس مكتب" },
-  { value: "رئيس قسم", label: "رئيس قسم" },
-  { value: "مراقب", label: "مراقب" },
-  { value: "ضابط صف", label: "ضابط صف" },
+const ROLE_OPTIONS = ALL_ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] }));
+
+const fonctionColumns: ColumnDef[] = [
+  { key: "label_ar", label: "التسمية (عربي)", required: true },
+  { key: "label_fr", label: "التسمية (فرنسي)" },
+  { key: "mapped_role", label: "الدور المرتبط", type: "select", options: ROLE_OPTIONS },
+  { key: "active", label: "الحالة", type: "boolean" },
 ];
 
 function useReferenceData(table: string) {
