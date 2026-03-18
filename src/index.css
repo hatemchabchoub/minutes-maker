@@ -256,7 +256,8 @@
   }
 
   .print-pv,
-  .print-report {
+  .print-report,
+  .print-list {
     display: block !important;
     position: static !important;
     visibility: visible !important;
@@ -277,7 +278,8 @@
   }
   /* Make ancestors of print templates visible */
   #root :has(.print-pv),
-  #root :has(.print-report) {
+  #root :has(.print-report),
+  #root :has(.print-list) {
     visibility: visible !important;
     position: static !important;
     height: auto !important;
@@ -286,12 +288,20 @@
   }
   .print-pv,
   .print-report,
+  .print-list,
   .print-pv *,
-  .print-report * {
+  .print-report *,
+  .print-list * {
     visibility: visible !important;
     position: static !important;
     height: auto !important;
     overflow: visible !important;
+  }
+
+  /* Hide non-printable elements inside print-list */
+  .print-list input[type="checkbox"],
+  .print-list .no-print-col {
+    display: none !important;
   }
 
   .no-print,

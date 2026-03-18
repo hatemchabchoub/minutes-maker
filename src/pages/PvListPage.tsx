@@ -252,7 +252,7 @@ const PvListPage = () => {
       </div>
 
       {/* Table */}
-      <div className="surface-glass overflow-hidden">
+      <div className="surface-glass overflow-hidden print-list">
         <Table>
           <TableHeader>
             <TableRow>
