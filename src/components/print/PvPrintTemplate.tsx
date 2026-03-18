@@ -65,25 +65,6 @@ export default function PvPrintTemplate({ pv, offenders, violations, seizures }:
           </div>
         </div>
 
-        {/* Legal Classification */}
-        <div style={{ marginBottom: "10pt" }}>
-          <div style={S.sectionTitle}>التصنيف القانوني — Classification juridique</div>
-          <div style={{ display: "flex", gap: "12pt", fontSize: "8pt", flexWrap: "wrap" }}>
-            {[
-              ["مخالفة ديوانية", pv.customs_violation],
-              ["مخالفة صرفية", pv.currency_violation],
-              ["مخالفة حق عام", pv.public_law_violation],
-              ["تجديد حجز", pv.seizure_renewal],
-            ].map(([label, val]) => (
-              <div key={String(label)} style={{ display: "flex", alignItems: "center", gap: "3pt" }}>
-                <span style={{ display: "inline-block", width: "8pt", height: "8pt", border: "0.5pt solid #333", textAlign: "center", lineHeight: "8pt", fontSize: "6pt" }}>
-                  {val ? "✓" : ""}
-                </span>
-                <span>{String(label)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Referral */}
         <div style={{ marginBottom: "10pt" }}>

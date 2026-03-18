@@ -413,12 +413,6 @@ const PvEditPage = () => {
         {pvType === "ضلع" && (
           <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} />
         )}
-        <div className="flex flex-wrap gap-6">
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={customsViolation} onCheckedChange={(v) => setCustomsViolation(!!v)} />مخالفة ديوانية</label>
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={currencyViolation} onCheckedChange={(v) => setCurrencyViolation(!!v)} />مخالفة صرفية</label>
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={publicLawViolation} onCheckedChange={(v) => setPublicLawViolation(!!v)} />حق عام</label>
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={seizureRenewal} onCheckedChange={(v) => setSeizureRenewal(!!v)} />تجديد حجز</label>
-        </div>
         <div className="space-y-2">
           <Label>ملاحظات</Label>
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
