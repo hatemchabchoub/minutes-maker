@@ -373,16 +373,17 @@ export default function UsersManagementPage() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5" />
-              تعديل المستخدم
+              تعديل المستخدم — الصلاحيات والتعيينات
             </DialogTitle>
           </DialogHeader>
 
           {editUser && (
             <div className="space-y-5 py-2">
+              {/* User info */}
               <div className="space-y-1 p-3 bg-muted/50 rounded-md">
                 <p className="text-sm font-medium">{editUser.full_name || "—"}</p>
                 <p className="text-xs text-muted-foreground">{editUser.generated_email || editUser.email}</p>
@@ -391,14 +392,16 @@ export default function UsersManagementPage() {
                 )}
               </div>
 
+              {/* Active toggle */}
               <div className="flex items-center justify-between">
                 <Label>الحساب نشط</Label>
                 <Switch checked={userActive} onCheckedChange={setUserActive} />
               </div>
 
+              {/* Department */}
               <div className="space-y-2">
                 <Label>القسم</Label>
-                <Select value={selectedDept} onValueChange={setSelectedDept}>
+                <Select value={selectedDept} onValueChange={(v) => { setSelectedDept(v); setSelectedUnit(""); }}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختيار القسم" />
                   </SelectTrigger>
@@ -413,9 +416,40 @@ export default function UsersManagementPage() {
                 </Select>
               </div>
 
+              {/* Unit */}
+              <div className="space-y-2">
+                <Label>الوحدة</Label>
+                <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختيار الوحدة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— بدون وحدة —</SelectItem>
+                    {filteredUnits?.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name_ar || u.name_fr}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Fonction */}
               <div className="space-y-2">
                 <Label>الوظيفة</Label>
-                <Select value={selectedFonction} onValueChange={setSelectedFonction}>
+                <Select value={selectedFonction} onValueChange={(v) => {
+                  setSelectedFonction(v);
+                  // Auto-set the mapped role when selecting a fonction
+                  if (v && v !== "none") {
+                    const f = fonctions?.find((fn) => fn.id === v);
+                    if (f?.mapped_role) {
+                      const role = f.mapped_role as AppRole;
+                      if (!selectedRoles.includes(role)) {
+                        setSelectedRoles((prev) => [...prev, role]);
+                      }
+                    }
+                  }
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختيار الوظيفة" />
                   </SelectTrigger>
@@ -433,10 +467,36 @@ export default function UsersManagementPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedFonction && selectedFonction !== "none" && (
-                  <p className="text-xs text-muted-foreground">
-                    الدور المرتبط: {ROLE_LABELS[(fonctions?.find(f => f.id === selectedFonction)?.mapped_role as AppRole)] || "ضابط"}
-                  </p>
+              </div>
+
+              {/* Roles / Privileges */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">الصلاحيات والأدوار</Label>
+                <div className="grid grid-cols-1 gap-2 p-3 border rounded-md bg-muted/30">
+                  {(Object.entries(ROLE_LABELS) as [AppRole, string][]).map(([role, label]) => (
+                    <div key={role} className="flex items-center gap-3">
+                      <Checkbox
+                        id={`role-${role}`}
+                        checked={selectedRoles.includes(role)}
+                        onCheckedChange={() => toggleRole(role)}
+                      />
+                      <label htmlFor={`role-${role}`} className="text-sm cursor-pointer flex items-center gap-2">
+                        <Badge variant={role === "admin" ? "default" : "secondary"} className="text-[10px]">
+                          {label}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {role === "admin" && "— وصول كامل لجميع الوظائف"}
+                          {role === "national_supervisor" && "— إشراف وطني على جميع الأقسام"}
+                          {role === "department_supervisor" && "— إشراف على قسم محدد"}
+                          {role === "officer" && "— إنشاء وتعديل المحاضر"}
+                          {role === "viewer" && "— عرض فقط بدون تعديل"}
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {selectedRoles.length === 0 && (
+                  <p className="text-xs text-destructive">⚠ يجب اختيار دور واحد على الأقل</p>
                 )}
               </div>
             </div>
