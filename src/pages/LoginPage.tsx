@@ -263,6 +263,9 @@ const LoginPage = () => {
           </Tabs>
         </div>
       </div>
+      <footer className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-muted-foreground/50">
+        © {new Date().getFullYear()} العقيد حاتم شبشوب — إدارة الأبحاث الديوانية · النسخة v1.11 beta 2026
+      </footer>
     </div>
   );
 };
