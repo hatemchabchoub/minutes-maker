@@ -57,6 +57,8 @@ export default function UsersManagementPage() {
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [userActive, setUserActive] = useState(true);
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [selectedRoles, setSelectedRoles] = useState<AppRole[]>([]);
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
 
   // Fetch fonctions (dynamic roles)
   const { data: fonctions } = useQuery({
