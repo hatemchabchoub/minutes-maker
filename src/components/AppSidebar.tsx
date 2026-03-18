@@ -107,8 +107,8 @@ export function AppSidebar() {
     <Sidebar side="right" collapsible="none">
       <SidebarContent className="relative overflow-hidden">
         {/* Decorative gradient orb */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-sidebar-primary/10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-20 -left-10 w-32 h-32 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 -start-20 w-40 h-40 rounded-full bg-sidebar-primary/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 -end-10 w-32 h-32 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
 
         {/* Logo */}
         <div className="p-4 pb-6 relative">
