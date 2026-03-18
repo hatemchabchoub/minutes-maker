@@ -346,7 +346,7 @@ const PvListPage = () => {
             </SelectContent>
           </Select>
 
-          <Select value={deptFilter} onValueChange={(v) => { setDeptFilter(v); setPage(0); }}>
+          <Select value={deptFilter} onValueChange={(v) => { setDeptFilter(v); setOfficerFilter("all"); setPage(0); }}>
             <SelectTrigger className="w-44">
               <SelectValue placeholder="القسم" />
             </SelectTrigger>
