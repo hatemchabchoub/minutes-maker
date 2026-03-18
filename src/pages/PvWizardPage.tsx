@@ -567,9 +567,11 @@ const PvWizardPage = () => {
                       }).select("id, label_ar, label_fr, category, legal_basis").single();
                       if (error) { toast.error(error.message); throw error; }
                       await refreshAllRefs();
-                      updateViolation(i, "violation_label", data.label_ar || data.label_fr);
-                      if (data.category) updateViolation(i, "violation_category", data.category);
-                      if (data.legal_basis) updateViolation(i, "legal_basis", data.legal_basis);
+                      updateViolationMulti(i, {
+                        violation_label: data.label_ar || data.label_fr,
+                        ...(data.category ? { violation_category: data.category } : {}),
+                        ...(data.legal_basis ? { legal_basis: data.legal_basis } : {}),
+                      });
                       toast.success("تمت إضافة المخالفة للمرجع");
                     }}
                   />
