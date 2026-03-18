@@ -156,24 +156,24 @@ const PvDetailPage = () => {
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-row-reverse items-center justify-between gap-4">
+        <div className="flex flex-row-reverse items-center gap-3">
           <Link to="/pv">
             <Button variant="ghost" size="icon" className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button>
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="text-start">
+            <div className="flex flex-row-reverse items-center gap-2">
               <h1 className="text-xl font-semibold font-mono-data">{pv.internal_reference}</h1>
               <StatusBadge status={status} />
             </div>
             <p className="text-sm text-muted-foreground">عدد المحضر: {pv.pv_number} — {pv.pv_date}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-row-reverse flex-wrap items-center gap-2">
           {/* Status transitions */}
           {transitions.length > 0 && canEdit && (
             <Select onValueChange={(v) => changeStatus(v as CaseStatus)}>
-              <SelectTrigger className="w-auto text-xs h-8">
+              <SelectTrigger className="h-8 w-auto text-xs">
                 <SelectValue placeholder="تغيير الحالة" />
               </SelectTrigger>
               <SelectContent>
@@ -216,7 +216,7 @@ const PvDetailPage = () => {
       </div>
 
       <Tabs defaultValue="overview">
-        <TabsList className="no-print flex-wrap">
+        <TabsList className="no-print">
           <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
           <TabsTrigger value="offenders">المخالفون ({offenders?.length || 0})</TabsTrigger>
           <TabsTrigger value="violations">المخالفات ({violations?.length || 0})</TabsTrigger>
@@ -231,8 +231,8 @@ const PvDetailPage = () => {
           <TabsTrigger value="audit">السجل ({auditLogs?.length || 0})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4 mt-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          <div className="grid grid-cols-2 gap-4 [direction:rtl] lg:grid-cols-4">
              {([
               ["القسم", (pv as any).departments?.name_ar || (pv as any).departments?.name_fr || "—"],
               ["الضابط", (pv as any).officers?.full_name || "—"],
@@ -243,24 +243,24 @@ const PvDetailPage = () => {
               ["الأولوية", pv.priority_level === "normal" ? "عادي" : pv.priority_level === "high" ? "مرتفع" : pv.priority_level || "عادي"],
               ["تاريخ الإنشاء", pv.created_at ? new Date(pv.created_at).toLocaleDateString("ar-TN") : "—"],
             ] as [string, string][]).map(([label, value]) => (
-              <div key={label} className="surface-elevated p-3">
+              <div key={label} className="surface-elevated p-3 text-start">
                 <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="text-sm font-medium mt-1">{value}</p>
+                <p className="mt-1 text-sm font-medium">{value}</p>
               </div>
             ))}
           </div>
 
           <div className="surface-elevated p-4">
-            <h2 className="text-sm font-medium mb-3">التصنيف القانوني</h2>
-            <div className="flex gap-4">
+            <h2 className="mb-3 text-sm font-medium">التصنيف القانوني</h2>
+            <div className="flex flex-row-reverse flex-wrap gap-4">
               {([
                 ["مخالفة ديوانية", pv.customs_violation],
                 ["مخالفة صرفية", pv.currency_violation],
                 ["حق عام", pv.public_law_violation],
                 ["تجديد حجز", pv.seizure_renewal],
               ] as [string, boolean | null][]).map(([label, val]) => (
-                <div key={label} className="flex items-center gap-2 text-sm">
-                  <div className={`w-2 h-2 rounded-full ${val ? "bg-primary" : "bg-border"}`} />
+                <div key={label} className="flex flex-row-reverse items-center gap-2 text-sm">
+                  <div className={`h-2 w-2 rounded-full ${val ? "bg-primary" : "bg-border"}`} />
                   {label}
                 </div>
               ))}
@@ -268,17 +268,17 @@ const PvDetailPage = () => {
           </div>
 
           <div className="surface-elevated p-4">
-            <h2 className="text-sm font-medium mb-3">ملخص المحجوزات</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <h2 className="mb-3 text-sm font-medium">ملخص المحجوزات</h2>
+            <div className="grid grid-cols-2 gap-4 [direction:rtl] lg:grid-cols-4">
               {([
                 ["المحجوز الفعلي", pv.total_actual_seizure],
                 ["المحجوز الصوري", pv.total_virtual_seizure],
                 ["المحجوز التحفظي", pv.total_precautionary_seizure],
                 ["المجموع الكلي", pv.total_seizure],
               ] as [string, number | null][]).map(([label, val]) => (
-                <div key={label}>
+                <div key={label} className="text-start">
                   <p className="text-xs text-muted-foreground">{label}</p>
-                  <p className="text-lg font-semibold font-mono-data mt-1">{formatCurrency(Number(val) || 0)}</p>
+                  <p className="mt-1 text-lg font-semibold font-mono-data">{formatCurrency(Number(val) || 0)}</p>
                 </div>
               ))}
             </div>
