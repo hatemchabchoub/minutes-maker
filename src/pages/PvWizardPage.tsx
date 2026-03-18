@@ -117,7 +117,7 @@ const PvWizardPage = () => {
     }
   }, [location.state]);
 
-  const { data: departments } = useQuery({
+  const { data: departments, refetch: refetchDepartments } = useQuery({
     queryKey: ["ref-departments"],
     queryFn: async () => {
       const { data } = await supabase.from("departments").select("id, name_fr, name_ar, code").eq("active", true).order("name_fr");
@@ -125,7 +125,7 @@ const PvWizardPage = () => {
     },
   });
 
-  const { data: officers } = useQuery({
+  const { data: officers, refetch: refetchOfficers } = useQuery({
     queryKey: ["ref-officers", departmentId],
     queryFn: async () => {
       let q = supabase.from("officers").select("id, full_name, badge_number, rank_label, department_id").eq("active", true).order("full_name");
@@ -134,6 +134,17 @@ const PvWizardPage = () => {
       return data || [];
     },
   });
+
+  // Refresh all reference lists to keep dropdowns in sync
+  const refreshAllRefs = async () => {
+    await Promise.all([
+      refetchDepartments(),
+      refetchOfficers(),
+      refetchReferralSources(),
+      refetchViolationRefs(),
+      refetchGoodsRefs(),
+    ]);
+  };
 
   const { data: referralSources, refetch: refetchReferralSources } = useQuery({
     queryKey: ["ref-referral-sources"],
@@ -403,7 +414,7 @@ const PvWizardPage = () => {
                     label_fr: vals.label_fr, label_ar: vals.label_ar,
                   }).select("id, label_fr, label_ar").single();
                   if (error) { toast.error(error.message); throw error; }
-                  await refetchReferralSources();
+                  await refreshAllRefs();
                   setReferralSourceId(data.id);
                   setReferralSourceLabel(data.label_ar || data.label_fr);
                   toast.success("تمت إضافة مصدر الإحالة");
@@ -550,7 +561,7 @@ const PvWizardPage = () => {
                         category: vals.category || null, legal_basis: vals.legal_basis || null,
                       }).select("id, label_ar, label_fr, category, legal_basis").single();
                       if (error) { toast.error(error.message); throw error; }
-                      await refetchViolationRefs();
+                      await refreshAllRefs();
                       updateViolation(i, "violation_label", data.label_ar || data.label_fr);
                       if (data.category) updateViolation(i, "violation_category", data.category);
                       if (data.legal_basis) updateViolation(i, "legal_basis", data.legal_basis);
@@ -630,7 +641,7 @@ const PvWizardPage = () => {
                         type_fr: vals.type_fr || null, type_ar: vals.type_ar || null,
                       });
                       if (error) { toast.error(error.message); throw error; }
-                      await refetchGoodsRefs();
+                       await refreshAllRefs();
                       updateSeizure(i, "goods_category", vals.category_ar || vals.category_fr);
                       if (vals.type_ar) updateSeizure(i, "goods_type", vals.type_ar);
                       toast.success("تمت إضافة صنف البضاعة");
@@ -657,7 +668,7 @@ const PvWizardPage = () => {
                         type_fr: vals.type_fr, type_ar: vals.type_ar,
                       });
                       if (error) { toast.error(error.message); throw error; }
-                      await refetchGoodsRefs();
+                      await refreshAllRefs();
                       updateSeizure(i, "goods_type", vals.type_ar || vals.type_fr);
                       if (vals.category_ar) updateSeizure(i, "goods_category", vals.category_ar);
                       toast.success("تمت إضافة نوع البضاعة");
