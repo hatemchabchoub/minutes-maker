@@ -352,7 +352,7 @@ const PvListPage = () => {
           </TableBody>
         </Table>
 
-        <div className="flex items-center justify-between px-4 py-3 border-t">
+        <div className="flex items-center justify-between px-4 py-3 border-t no-print">
           <p className="text-xs text-muted-foreground">
             الصفحة {page + 1} من {Math.max(totalPages, 1)}
           </p>
