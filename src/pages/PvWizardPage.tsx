@@ -561,7 +561,7 @@ const PvWizardPage = () => {
                         category: vals.category || null, legal_basis: vals.legal_basis || null,
                       }).select("id, label_ar, label_fr, category, legal_basis").single();
                       if (error) { toast.error(error.message); throw error; }
-                      await refetchViolationRefs();
+                      await refreshAllRefs();
                       updateViolation(i, "violation_label", data.label_ar || data.label_fr);
                       if (data.category) updateViolation(i, "violation_category", data.category);
                       if (data.legal_basis) updateViolation(i, "legal_basis", data.legal_basis);
