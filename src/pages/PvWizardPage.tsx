@@ -85,10 +85,6 @@ const PvWizardPage = () => {
       if (p.pv_type) setPvType(p.pv_type);
       if (p.referral_type) setReferralType(p.referral_type);
       if (p.notes) setNotes(p.notes);
-      if (p.customs_violation) setCustomsViolation(true);
-      if (p.currency_violation) setCurrencyViolation(true);
-      if (p.public_law_violation) setPublicLawViolation(true);
-      if (p.seizure_renewal) setSeizureRenewal(true);
       if (p.offenders?.length) {
         setOffenders(p.offenders.map((o: any) => ({
           name_or_company: o.name_or_company || "", identifier: o.identifier || "",
