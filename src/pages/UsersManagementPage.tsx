@@ -49,7 +49,7 @@ export default function UsersManagementPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState<UserRow | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<AppRole[]>([]);
+  const [selectedFonction, setSelectedFonction] = useState<string>("");
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [userActive, setUserActive] = useState(true);
 
