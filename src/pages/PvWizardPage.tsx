@@ -117,7 +117,7 @@ const PvWizardPage = () => {
     }
   }, [location.state]);
 
-  const { data: departments } = useQuery({
+  const { data: departments, refetch: refetchDepartments } = useQuery({
     queryKey: ["ref-departments"],
     queryFn: async () => {
       const { data } = await supabase.from("departments").select("id, name_fr, name_ar, code").eq("active", true).order("name_fr");
@@ -125,7 +125,7 @@ const PvWizardPage = () => {
     },
   });
 
-  const { data: officers } = useQuery({
+  const { data: officers, refetch: refetchOfficers } = useQuery({
     queryKey: ["ref-officers", departmentId],
     queryFn: async () => {
       let q = supabase.from("officers").select("id, full_name, badge_number, rank_label, department_id").eq("active", true).order("full_name");
@@ -134,6 +134,17 @@ const PvWizardPage = () => {
       return data || [];
     },
   });
+
+  // Refresh all reference lists to keep dropdowns in sync
+  const refreshAllRefs = async () => {
+    await Promise.all([
+      refetchDepartments(),
+      refetchOfficers(),
+      refetchReferralSources(),
+      refetchViolationRefs(),
+      refetchGoodsRefs(),
+    ]);
+  };
 
   const { data: referralSources, refetch: refetchReferralSources } = useQuery({
     queryKey: ["ref-referral-sources"],
