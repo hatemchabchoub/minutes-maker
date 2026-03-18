@@ -63,10 +63,6 @@ const PvEditPage = () => {
   const [pvType, setPvType] = useState("");
   const [parentPvId, setParentPvId] = useState("");
   const [notes, setNotes] = useState("");
-  const [customsViolation, setCustomsViolation] = useState(false);
-  const [currencyViolation, setCurrencyViolation] = useState(false);
-  const [publicLawViolation, setPublicLawViolation] = useState(false);
-  const [seizureRenewal, setSeizureRenewal] = useState(false);
 
   // Sub-records
   const [offenders, setOffenders] = useState<OffenderRow[]>([]);
