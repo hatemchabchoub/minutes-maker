@@ -125,7 +125,7 @@ const DashboardPage = () => {
     queryFn: async () => {
       let query = supabase
         .from("pv")
-        .select("id, pv_number, pv_date, case_status, total_actual_seizure, total_virtual_seizure, total_precautionary_seizure, total_seizure, department_id, departments(name_ar, code), officer_id, officers(full_name), customs_violation, currency_violation, public_law_violation, created_at")
+        .select("id, pv_number, pv_date, pv_type, case_status, parent_pv_id, total_actual_seizure, total_virtual_seizure, total_precautionary_seizure, total_seizure, department_id, departments(name_ar, code), officer_id, officers(full_name), customs_violation, currency_violation, public_law_violation, created_at")
         .gte("pv_date", dateFrom);
       if (departmentFilter !== "all") query = query.eq("department_id", departmentFilter);
       const { data } = await query;
