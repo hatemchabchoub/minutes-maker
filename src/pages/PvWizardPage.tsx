@@ -189,7 +189,10 @@ const PvWizardPage = () => {
     const updated = [...violations]; updated[i] = { ...updated[i], [field]: value }; setViolations(updated);
   };
   const updateSeizure = (i: number, field: keyof Seizure, value: string) => {
-    const updated = [...seizures]; updated[i] = { ...updated[i], [field]: value }; setSeizures(updated);
+    setSeizures(prev => { const updated = [...prev]; updated[i] = { ...updated[i], [field]: value }; return updated; });
+  };
+  const updateSeizureMulti = (i: number, fields: Partial<Seizure>) => {
+    setSeizures(prev => { const updated = [...prev]; updated[i] = { ...updated[i], ...fields }; return updated; });
   };
 
   const formatCurrency = (v: number) => new Intl.NumberFormat("fr-TN", { minimumFractionDigits: 3 }).format(v);
