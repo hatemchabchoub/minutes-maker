@@ -321,7 +321,7 @@ const PvListPage = () => {
                     {isChild && <span className="text-muted-foreground me-1">↳</span>}
                     {(pv as any).departments?.name_ar || (pv as any).departments?.name_fr || "—"}
                   </TableCell>
-                  <TableCell className="text-xs max-w-[100px] truncate">{pv.officers?.full_name || '—'}</TableCell>
+                  <TableCell className="text-xs whitespace-nowrap">{pv.officers?.full_name || '—'}</TableCell>
                   <TableCell className="text-xs max-w-[220px]">
                     {violationsByPv?.[pv.id]?.length ? (
                       <div className="space-y-0.5">
