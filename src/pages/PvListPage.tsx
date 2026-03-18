@@ -273,7 +273,7 @@ const PvListPage = () => {
               <TableHead className="text-end">حجز تحفظي</TableHead>
               <TableHead className="text-end">المجموع</TableHead>
               <TableHead>الحالة</TableHead>
-              <TableHead className="w-[100px]">إجراءات</TableHead>
+              <TableHead className="w-[100px] no-print-col">إجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
