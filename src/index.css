@@ -82,7 +82,12 @@
 
   body {
     @apply bg-background text-foreground font-sans;
+    direction: rtl;
     font-feature-settings: "cv11", "ss01", "ss03";
+  }
+
+  #root {
+    direction: rtl;
   }
 
   h1, h2, h3, h4, h5, h6 {
