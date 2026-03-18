@@ -39,7 +39,7 @@ export default function PreviewStep({
           <p className="text-xs text-muted-foreground">
             {rows.length} سطر للاستيراد
             {validationErrors.length > 0 && (
-              <span className="text-destructive ml-2">
+              <span className="text-destructive ms-2">
                 · {validationErrors.length} تحذير(ات)
               </span>
             )}

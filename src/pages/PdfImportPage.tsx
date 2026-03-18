@@ -321,7 +321,7 @@ const PdfImportPage = () => {
                 </p>
               </div>
               <div className={`px-3 py-1 rounded-sm text-xs font-medium border ${confidenceColor(overallConfidence)}`}>
-                <Shield className="h-3 w-3 inline mr-1" />
+                <Shield className="h-3 w-3 inline me-1" />
                 الثقة: {overallConfidence}% — {confidenceLabel(overallConfidence)}
               </div>
             </div>

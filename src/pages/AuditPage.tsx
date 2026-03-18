@@ -78,17 +78,17 @@ export default function AuditPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="بحث..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pr-9 w-64"
+            className="pe-9 w-64"
           />
         </div>
         <Select value={actionFilter} onValueChange={setActionFilter}>
           <SelectTrigger className="w-40">
-            <Filter className="h-3.5 w-3.5 ml-1" />
+            <Filter className="h-3.5 w-3.5 ms-1" />
             <SelectValue placeholder="الإجراء" />
           </SelectTrigger>
           <SelectContent>
@@ -100,7 +100,7 @@ export default function AuditPage() {
         </Select>
         <Select value={tableFilter} onValueChange={setTableFilter}>
           <SelectTrigger className="w-44">
-            <Filter className="h-3.5 w-3.5 ml-1" />
+            <Filter className="h-3.5 w-3.5 ms-1" />
             <SelectValue placeholder="الجدول" />
           </SelectTrigger>
           <SelectContent>
