@@ -536,7 +536,7 @@ const PvWizardPage = () => {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
+                <div className="col-span-2 space-y-1">
                   <Label className="text-xs">وصف المخالفة *</Label>
                   <AutocompleteWithAdd
                     value={v.violation_label}
