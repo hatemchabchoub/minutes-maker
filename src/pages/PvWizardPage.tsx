@@ -438,7 +438,7 @@ const PvWizardPage = () => {
 
           {/* Parent PV selector — shown only when type is ضلع */}
           {pvType === "ضلع" && (
-            <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} />
+            <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} currentPvNumber={pvNumber} />
           )}
 
           <div className="space-y-2">
