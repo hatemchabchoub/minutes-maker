@@ -123,6 +123,7 @@ export default function ReferencesPage() {
   const violations = useReferenceData("violation_reference");
   const goods = useReferenceData("goods_reference");
   const referrals = useReferenceData("referral_sources");
+  const fonctions = useReferenceData("fonctions");
 
   // Fetch profiles for user linking
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -137,14 +138,26 @@ export default function ReferencesPage() {
     label: `${p.full_name || p.email} (${p.email || ""})`,
   }));
 
+  // Build fonction options from DB
+  const fonctionOptions = fonctions.data
+    .filter((f) => f.active !== false)
+    .map((f) => ({ value: f.label_ar, label: f.label_ar }));
+
   // Populate department select options for officers
   const deptOptions = departments.data.map((d) => ({ value: d.id, label: d.name_ar || d.name_fr }));
 
   const officerColumnsWithRefs = officerColumns.map((c) => {
     if (c.key === "department_id") return { ...c, options: deptOptions, hidden: false };
     if (c.key === "auth_user_id") return { ...c, options: [{ value: "none", label: "— بدون ربط —" }, ...profileOptions] };
+    if (c.key === "fonction") return { ...c, options: fonctionOptions };
     return c;
   });
+
+  // Lookup mapped_role from fonctions table
+  const fonctionToRole = (fonctionLabel: string): AppRole => {
+    const found = fonctions.data.find((f) => f.label_ar === fonctionLabel);
+    return (found?.mapped_role as AppRole) || "officer";
+  };
 
   // Custom officer add/update that also assigns role
   const handleOfficerAdd = async (item: Record<string, any>) => {
@@ -168,7 +181,6 @@ export default function ReferencesPage() {
   const assignRoleFromFonction = async (authUserId: string, fonction: string) => {
     const role = fonctionToRole(fonction);
     try {
-      // Remove existing roles, then assign the new one
       await supabase.from("user_roles").delete().eq("user_id", authUserId);
       await supabase.from("user_roles").insert({ user_id: authUserId, role });
       toast.success(`تم تعيين دور "${ROLE_LABELS[role]}" للمستخدم تلقائياً`);
@@ -180,6 +192,7 @@ export default function ReferencesPage() {
   const tabs = [
     { id: "departments", label: "الأقسام", icon: Building2, content: <ReferenceTable {...departments} columns={departmentColumns} onAdd={departments.add} onUpdate={departments.update} onDelete={departments.remove} /> },
     { id: "officers", label: "الضباط", icon: UserCheck, content: <ReferenceTable {...officers} columns={officerColumnsWithRefs} onAdd={handleOfficerAdd} onUpdate={handleOfficerUpdate} onDelete={officers.remove} /> },
+    { id: "fonctions", label: "الوظائف", icon: Briefcase, content: <ReferenceTable {...fonctions} columns={fonctionColumns} onAdd={fonctions.add} onUpdate={fonctions.update} onDelete={fonctions.remove} /> },
     { id: "violations", label: "المخالفات", icon: AlertTriangle, content: <ReferenceTable {...violations} columns={violationColumns} onAdd={violations.add} onUpdate={violations.update} onDelete={violations.remove} /> },
     { id: "goods", label: "البضائع", icon: Package, content: <ReferenceTable {...goods} columns={goodsColumns} onAdd={goods.add} onUpdate={goods.update} onDelete={goods.remove} /> },
     { id: "referrals", label: "مصادر الإحالة", icon: PhoneForwarded, content: <ReferenceTable {...referrals} columns={referralColumns} onAdd={referrals.add} onUpdate={referrals.update} onDelete={referrals.remove} /> },
