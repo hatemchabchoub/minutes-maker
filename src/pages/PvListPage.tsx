@@ -258,7 +258,7 @@ const PvListPage = () => {
                   onCheckedChange={toggleSelectAll}
                 />
               </TableHead>
-              <TableHead>المرجع الداخلي</TableHead>
+              <TableHead>القسم</TableHead>
               <TableHead>النوع</TableHead>
               <TableHead>عدد المحضر</TableHead>
               <TableHead>التاريخ</TableHead>
@@ -300,9 +300,9 @@ const PvListPage = () => {
                       onCheckedChange={() => toggleSelect(pv.id)}
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-xs font-medium">
+                  <TableCell className="text-xs">
                     {isChild && <span className="text-muted-foreground me-1">↳</span>}
-                    {pv.internal_reference}
+                    {(pv as any).departments?.name_ar || (pv as any).departments?.name_fr || "—"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
