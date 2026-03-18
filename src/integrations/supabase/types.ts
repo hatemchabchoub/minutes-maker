@@ -379,7 +379,9 @@ export type Database = {
           department_id: string | null
           fonction: string | null
           full_name: string
+          generated_email: string | null
           id: string
+          initial_password: string | null
           rank_label: string | null
           unit_id: string | null
         }
@@ -391,7 +393,9 @@ export type Database = {
           department_id?: string | null
           fonction?: string | null
           full_name: string
+          generated_email?: string | null
           id?: string
+          initial_password?: string | null
           rank_label?: string | null
           unit_id?: string | null
         }
@@ -403,7 +407,9 @@ export type Database = {
           department_id?: string | null
           fonction?: string | null
           full_name?: string
+          generated_email?: string | null
           id?: string
+          initial_password?: string | null
           rank_label?: string | null
           unit_id?: string | null
         }
