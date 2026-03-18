@@ -166,25 +166,24 @@ export default function UsersManagementPage() {
 
   const openEdit = (user: UserRow) => {
     setEditUser(user);
-    setSelectedRoles([...user.roles]);
+    // Find the fonction that matches the user's current role
+    const userRole = user.roles[0];
+    const matchingFonction = fonctions?.find((f) => f.mapped_role === userRole);
+    setSelectedFonction(matchingFonction?.id || "");
     setSelectedDept(user.department_id || "");
     setUserActive(user.active !== false);
   };
 
   const handleSave = () => {
     if (!editUser) return;
+    const selectedFonctionData = fonctions?.find((f) => f.id === selectedFonction);
+    const mappedRole = (selectedFonctionData?.mapped_role as AppRole) || "officer";
     saveMutation.mutate({
       user: editUser,
-      roles: selectedRoles,
+      roles: [mappedRole],
       departmentId: selectedDept === "none" ? null : selectedDept || null,
       active: userActive,
     });
-  };
-
-  const toggleRole = (role: AppRole) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
   };
 
   const filtered = (users || []).filter((u) => {
