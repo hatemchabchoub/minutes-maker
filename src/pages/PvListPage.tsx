@@ -364,7 +364,7 @@ const PvListPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">كل الضباط</SelectItem>
-              {officers?.map(o => (
+              {filteredOfficers?.map(o => (
                 <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
               ))}
             </SelectContent>
