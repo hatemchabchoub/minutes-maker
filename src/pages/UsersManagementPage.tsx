@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Search, UserCog, ShieldCheck, Eye, EyeOff, Copy } from "lucide-react";
 
 type AppRole = "admin" | "national_supervisor" | "department_supervisor" | "officer" | "viewer";
@@ -56,6 +57,8 @@ export default function UsersManagementPage() {
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [userActive, setUserActive] = useState(true);
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [selectedRoles, setSelectedRoles] = useState<AppRole[]>([]);
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
 
   // Fetch fonctions (dynamic roles)
   const { data: fonctions } = useQuery({
@@ -78,6 +81,20 @@ export default function UsersManagementPage() {
       const { data, error } = await supabase
         .from("departments")
         .select("id, name_fr, name_ar, code")
+        .eq("active", true)
+        .order("name_fr");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch units
+  const { data: units } = useQuery({
+    queryKey: ["units"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("units")
+        .select("id, name_fr, name_ar, code, department_id")
         .eq("active", true)
         .order("name_fr");
       if (error) throw error;
@@ -141,16 +158,17 @@ export default function UsersManagementPage() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async ({
-      user, roles, departmentId, active,
+      user, roles, departmentId, unitId, active,
     }: {
       user: UserRow;
       roles: AppRole[];
       departmentId: string | null;
+      unitId?: string | null;
       active: boolean;
     }) => {
       const { error: profileErr } = await supabase
         .from("profiles")
-        .update({ department_id: departmentId || null, active })
+        .update({ department_id: departmentId || null, unit_id: unitId || null, active })
         .eq("id", user.id);
       if (profileErr) throw profileErr;
 
@@ -183,17 +201,35 @@ export default function UsersManagementPage() {
     const matchingFonction = fonctions?.find((f) => f.mapped_role === userRole);
     setSelectedFonction(matchingFonction?.id || "");
     setSelectedDept(user.department_id || "");
+    setSelectedUnit(user.unit_id || "");
+    setSelectedRoles([...user.roles]);
     setUserActive(user.active !== false);
   };
 
+  const toggleRole = (role: AppRole) => {
+    setSelectedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
+  };
+
+  const filteredUnits = units?.filter(
+    (u) => !selectedDept || selectedDept === "none" || u.department_id === selectedDept
+  );
+
   const handleSave = () => {
     if (!editUser) return;
-    const selectedFonctionData = fonctions?.find((f) => f.id === selectedFonction);
-    const mappedRole = (selectedFonctionData?.mapped_role as AppRole) || "officer";
+    // If no roles manually selected, fall back to fonction's mapped role
+    let rolesToSave = selectedRoles;
+    if (rolesToSave.length === 0 && selectedFonction && selectedFonction !== "none") {
+      const selectedFonctionData = fonctions?.find((f) => f.id === selectedFonction);
+      const mappedRole = (selectedFonctionData?.mapped_role as AppRole) || "officer";
+      rolesToSave = [mappedRole];
+    }
     saveMutation.mutate({
       user: editUser,
-      roles: [mappedRole],
+      roles: rolesToSave,
       departmentId: selectedDept === "none" ? null : selectedDept || null,
+      unitId: selectedUnit === "none" ? null : selectedUnit || null,
       active: userActive,
     });
   };
@@ -337,16 +373,17 @@ export default function UsersManagementPage() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5" />
-              تعديل المستخدم
+              تعديل المستخدم — الصلاحيات والتعيينات
             </DialogTitle>
           </DialogHeader>
 
           {editUser && (
             <div className="space-y-5 py-2">
+              {/* User info */}
               <div className="space-y-1 p-3 bg-muted/50 rounded-md">
                 <p className="text-sm font-medium">{editUser.full_name || "—"}</p>
                 <p className="text-xs text-muted-foreground">{editUser.generated_email || editUser.email}</p>
@@ -355,14 +392,16 @@ export default function UsersManagementPage() {
                 )}
               </div>
 
+              {/* Active toggle */}
               <div className="flex items-center justify-between">
                 <Label>الحساب نشط</Label>
                 <Switch checked={userActive} onCheckedChange={setUserActive} />
               </div>
 
+              {/* Department */}
               <div className="space-y-2">
                 <Label>القسم</Label>
-                <Select value={selectedDept} onValueChange={setSelectedDept}>
+                <Select value={selectedDept} onValueChange={(v) => { setSelectedDept(v); setSelectedUnit(""); }}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختيار القسم" />
                   </SelectTrigger>
@@ -377,9 +416,40 @@ export default function UsersManagementPage() {
                 </Select>
               </div>
 
+              {/* Unit */}
+              <div className="space-y-2">
+                <Label>الوحدة</Label>
+                <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختيار الوحدة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— بدون وحدة —</SelectItem>
+                    {filteredUnits?.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name_ar || u.name_fr}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Fonction */}
               <div className="space-y-2">
                 <Label>الوظيفة</Label>
-                <Select value={selectedFonction} onValueChange={setSelectedFonction}>
+                <Select value={selectedFonction} onValueChange={(v) => {
+                  setSelectedFonction(v);
+                  // Auto-set the mapped role when selecting a fonction
+                  if (v && v !== "none") {
+                    const f = fonctions?.find((fn) => fn.id === v);
+                    if (f?.mapped_role) {
+                      const role = f.mapped_role as AppRole;
+                      if (!selectedRoles.includes(role)) {
+                        setSelectedRoles((prev) => [...prev, role]);
+                      }
+                    }
+                  }
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختيار الوظيفة" />
                   </SelectTrigger>
@@ -397,10 +467,36 @@ export default function UsersManagementPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedFonction && selectedFonction !== "none" && (
-                  <p className="text-xs text-muted-foreground">
-                    الدور المرتبط: {ROLE_LABELS[(fonctions?.find(f => f.id === selectedFonction)?.mapped_role as AppRole)] || "ضابط"}
-                  </p>
+              </div>
+
+              {/* Roles / Privileges */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">الصلاحيات والأدوار</Label>
+                <div className="grid grid-cols-1 gap-2 p-3 border rounded-md bg-muted/30">
+                  {(Object.entries(ROLE_LABELS) as [AppRole, string][]).map(([role, label]) => (
+                    <div key={role} className="flex items-center gap-3">
+                      <Checkbox
+                        id={`role-${role}`}
+                        checked={selectedRoles.includes(role)}
+                        onCheckedChange={() => toggleRole(role)}
+                      />
+                      <label htmlFor={`role-${role}`} className="text-sm cursor-pointer flex items-center gap-2">
+                        <Badge variant={role === "admin" ? "default" : "secondary"} className="text-[10px]">
+                          {label}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {role === "admin" && "— وصول كامل لجميع الوظائف"}
+                          {role === "national_supervisor" && "— إشراف وطني على جميع الأقسام"}
+                          {role === "department_supervisor" && "— إشراف على قسم محدد"}
+                          {role === "officer" && "— إنشاء وتعديل المحاضر"}
+                          {role === "viewer" && "— عرض فقط بدون تعديل"}
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {selectedRoles.length === 0 && (
+                  <p className="text-xs text-destructive">⚠ يجب اختيار دور واحد على الأقل</p>
                 )}
               </div>
             </div>
