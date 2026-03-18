@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Plus, Trash2, ArrowLeft, ArrowRight, Save, Check, AlertCircle } from "lucide-react";
 import ParentPvSelector from "@/components/pv/ParentPvSelector";
 import { AutocompleteWithAdd, AutocompleteOption } from "@/components/ui/autocomplete-with-add";
@@ -71,10 +71,6 @@ const PvWizardPage = () => {
   const [pvType, setPvType] = useState("");
   const [parentPvId, setParentPvId] = useState("");
   const [notes, setNotes] = useState("");
-  const [customsViolation, setCustomsViolation] = useState(false);
-  const [currencyViolation, setCurrencyViolation] = useState(false);
-  const [publicLawViolation, setPublicLawViolation] = useState(false);
-  const [seizureRenewal, setSeizureRenewal] = useState(false);
 
   const [offenders, setOffenders] = useState<Offender[]>([emptyOffender()]);
   const [violations, setViolations] = useState<Violation[]>([emptyViolation()]);
@@ -89,10 +85,6 @@ const PvWizardPage = () => {
       if (p.pv_type) setPvType(p.pv_type);
       if (p.referral_type) setReferralType(p.referral_type);
       if (p.notes) setNotes(p.notes);
-      if (p.customs_violation) setCustomsViolation(true);
-      if (p.currency_violation) setCurrencyViolation(true);
-      if (p.public_law_violation) setPublicLawViolation(true);
-      if (p.seizure_renewal) setSeizureRenewal(true);
       if (p.offenders?.length) {
         setOffenders(p.offenders.map((o: any) => ({
           name_or_company: o.name_or_company || "", identifier: o.identifier || "",
@@ -254,8 +246,6 @@ const PvWizardPage = () => {
         referral_type: referralType || null, referral_source_id: referralSourceId || null,
         pv_type: pvType || null, case_status: status,
         parent_pv_id: pvType === "ضلع" && parentPvId ? parentPvId : null,
-        customs_violation: customsViolation, currency_violation: currencyViolation,
-        public_law_violation: publicLawViolation, seizure_renewal: seizureRenewal,
         total_actual_seizure: totalActual, total_virtual_seizure: totalVirtual,
         total_precautionary_seizure: totalPrecautionary,
         notes: notes || null, source_import_type: sourceImportId ? "ocr" : "manual",
@@ -441,27 +431,6 @@ const PvWizardPage = () => {
             <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} currentPvNumber={pvNumber} />
           )}
 
-          <div className="space-y-2">
-            <Label>التصنيف القانوني</Label>
-            <div className="flex flex-wrap gap-6">
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={customsViolation} onCheckedChange={(v) => setCustomsViolation(!!v)} />
-                مخالفة ديوانية
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={currencyViolation} onCheckedChange={(v) => setCurrencyViolation(!!v)} />
-                مخالفة صرفية
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={publicLawViolation} onCheckedChange={(v) => setPublicLawViolation(!!v)} />
-                مخالفة حق عام
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={seizureRenewal} onCheckedChange={(v) => setSeizureRenewal(!!v)} />
-                تجديد حجز
-              </label>
-            </div>
-          </div>
 
           <div className="space-y-2">
             <Label>ملاحظات</Label>

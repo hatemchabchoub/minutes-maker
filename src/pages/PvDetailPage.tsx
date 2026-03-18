@@ -250,22 +250,6 @@ const PvDetailPage = () => {
             ))}
           </div>
 
-          <div className="surface-elevated p-4">
-            <h2 className="mb-3 text-sm font-medium">التصنيف القانوني</h2>
-            <div className="flex flex-row-reverse flex-wrap gap-4">
-              {([
-                ["مخالفة ديوانية", pv.customs_violation],
-                ["مخالفة صرفية", pv.currency_violation],
-                ["حق عام", pv.public_law_violation],
-                ["تجديد حجز", pv.seizure_renewal],
-              ] as [string, boolean | null][]).map(([label, val]) => (
-                <div key={label} className="flex flex-row-reverse items-center gap-2 text-sm">
-                  <div className={`h-2 w-2 rounded-full ${val ? "bg-primary" : "bg-border"}`} />
-                  {label}
-                </div>
-              ))}
-            </div>
-          </div>
 
           <div className="surface-elevated p-4">
             <h2 className="mb-3 text-sm font-medium">ملخص المحجوزات</h2>

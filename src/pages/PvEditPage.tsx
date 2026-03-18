@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import ParentPvSelector from "@/components/pv/ParentPvSelector";
@@ -63,10 +63,6 @@ const PvEditPage = () => {
   const [pvType, setPvType] = useState("");
   const [parentPvId, setParentPvId] = useState("");
   const [notes, setNotes] = useState("");
-  const [customsViolation, setCustomsViolation] = useState(false);
-  const [currencyViolation, setCurrencyViolation] = useState(false);
-  const [publicLawViolation, setPublicLawViolation] = useState(false);
-  const [seizureRenewal, setSeizureRenewal] = useState(false);
 
   // Sub-records
   const [offenders, setOffenders] = useState<OffenderRow[]>([]);
@@ -183,10 +179,6 @@ const PvEditPage = () => {
       setPvType(pv.pv_type || "");
       setParentPvId((pv as any).parent_pv_id || "");
       setNotes(pv.notes || "");
-      setCustomsViolation(pv.customs_violation || false);
-      setCurrencyViolation(pv.currency_violation || false);
-      setPublicLawViolation(pv.public_law_violation || false);
-      setSeizureRenewal(pv.seizure_renewal || false);
     }
   }, [pv]);
 
@@ -273,10 +265,6 @@ const PvEditPage = () => {
         referral_source_id: referralSourceId || null,
         pv_type: pvType || null,
         parent_pv_id: pvType === "ضلع" && parentPvId ? parentPvId : null,
-        customs_violation: customsViolation,
-        currency_violation: currencyViolation,
-        public_law_violation: publicLawViolation,
-        seizure_renewal: seizureRenewal,
         total_actual_seizure: totalActual,
         total_virtual_seizure: totalVirtual,
         total_precautionary_seizure: totalPrecautionary,
@@ -425,12 +413,6 @@ const PvEditPage = () => {
         {pvType === "ضلع" && (
           <ParentPvSelector parentPvId={parentPvId} onChangeParentPvId={setParentPvId} />
         )}
-        <div className="flex flex-wrap gap-6">
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={customsViolation} onCheckedChange={(v) => setCustomsViolation(!!v)} />مخالفة ديوانية</label>
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={currencyViolation} onCheckedChange={(v) => setCurrencyViolation(!!v)} />مخالفة صرفية</label>
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={publicLawViolation} onCheckedChange={(v) => setPublicLawViolation(!!v)} />حق عام</label>
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={seizureRenewal} onCheckedChange={(v) => setSeizureRenewal(!!v)} />تجديد حجز</label>
-        </div>
         <div className="space-y-2">
           <Label>ملاحظات</Label>
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
