@@ -88,7 +88,7 @@ export default function AuditPage() {
         </div>
         <Select value={actionFilter} onValueChange={setActionFilter}>
           <SelectTrigger className="w-40">
-            <Filter className="h-3.5 w-3.5 ml-1" />
+            <Filter className="h-3.5 w-3.5 ms-1" />
             <SelectValue placeholder="الإجراء" />
           </SelectTrigger>
           <SelectContent>
