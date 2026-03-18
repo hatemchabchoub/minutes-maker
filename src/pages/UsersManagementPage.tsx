@@ -53,6 +53,20 @@ export default function UsersManagementPage() {
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [userActive, setUserActive] = useState(true);
 
+  // Fetch fonctions (dynamic roles)
+  const { data: fonctions } = useQuery({
+    queryKey: ["fonctions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fonctions")
+        .select("id, label_ar, label_fr, mapped_role, active")
+        .eq("active", true)
+        .order("label_ar");
+      if (error) throw error;
+      return data as FonctionRow[];
+    },
+  });
+
   // Fetch departments
   const { data: departments } = useQuery({
     queryKey: ["departments"],
