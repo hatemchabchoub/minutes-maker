@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Pencil, Search, UserCog, ShieldCheck } from "lucide-react";
+import { Pencil, Search, UserCog, ShieldCheck, Eye, EyeOff, Copy } from "lucide-react";
 
 type AppRole = "admin" | "national_supervisor" | "department_supervisor" | "officer" | "viewer";
 
@@ -42,6 +42,10 @@ interface UserRow {
   active: boolean | null;
   roles: AppRole[];
   department_name?: string;
+  officer_id?: string;
+  officer_fonction?: string;
+  generated_email?: string;
+  initial_password?: string;
 }
 
 export default function UsersManagementPage() {
@@ -51,6 +55,7 @@ export default function UsersManagementPage() {
   const [selectedFonction, setSelectedFonction] = useState<string>("");
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [userActive, setUserActive] = useState(true);
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
 
   // Fetch fonctions (dynamic roles)
   const { data: fonctions } = useQuery({
@@ -80,7 +85,7 @@ export default function UsersManagementPage() {
     },
   });
 
-  // Fetch all users with roles
+  // Fetch all users with roles + officer data
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
@@ -95,6 +100,11 @@ export default function UsersManagementPage() {
         .select("user_id, role");
       if (rErr) throw rErr;
 
+      // Fetch officers to link credentials
+      const { data: allOfficers } = await supabase
+        .from("officers")
+        .select("id, auth_user_id, fonction, generated_email, initial_password");
+
       const roleMap = new Map<string, AppRole[]>();
       allRoles?.forEach((r: any) => {
         const existing = roleMap.get(r.user_id) || [];
@@ -102,44 +112,48 @@ export default function UsersManagementPage() {
         roleMap.set(r.user_id, existing);
       });
 
-      return (profiles || []).map((p: any) => ({
-        id: p.id,
-        auth_user_id: p.auth_user_id,
-        full_name: p.full_name,
-        email: p.email,
-        department_id: p.department_id,
-        unit_id: p.unit_id,
-        active: p.active,
-        roles: roleMap.get(p.auth_user_id) || [],
-        department_name: p.departments?.name_ar || p.departments?.name_fr || null,
-      })) as UserRow[];
+      const officerMap = new Map<string, any>();
+      allOfficers?.forEach((o: any) => {
+        if (o.auth_user_id) officerMap.set(o.auth_user_id, o);
+      });
+
+      return (profiles || []).map((p: any) => {
+        const officer = officerMap.get(p.auth_user_id);
+        return {
+          id: p.id,
+          auth_user_id: p.auth_user_id,
+          full_name: p.full_name,
+          email: p.email,
+          department_id: p.department_id,
+          unit_id: p.unit_id,
+          active: p.active,
+          roles: roleMap.get(p.auth_user_id) || [],
+          department_name: p.departments?.name_ar || p.departments?.name_fr || null,
+          officer_id: officer?.id,
+          officer_fonction: officer?.fonction,
+          generated_email: officer?.generated_email,
+          initial_password: officer?.initial_password,
+        };
+      }) as UserRow[];
     },
   });
 
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async ({
-      user,
-      roles,
-      departmentId,
-      active,
+      user, roles, departmentId, active,
     }: {
       user: UserRow;
       roles: AppRole[];
       departmentId: string | null;
       active: boolean;
     }) => {
-      // Update profile
       const { error: profileErr } = await supabase
         .from("profiles")
-        .update({
-          department_id: departmentId || null,
-          active,
-        })
+        .update({ department_id: departmentId || null, active })
         .eq("id", user.id);
       if (profileErr) throw profileErr;
 
-      // Sync roles: delete all then re-insert
       const { error: delErr } = await supabase
         .from("user_roles")
         .delete()
@@ -165,7 +179,6 @@ export default function UsersManagementPage() {
 
   const openEdit = (user: UserRow) => {
     setEditUser(user);
-    // Find the fonction that matches the user's current role
     const userRole = user.roles[0];
     const matchingFonction = fonctions?.find((f) => f.mapped_role === userRole);
     setSelectedFonction(matchingFonction?.id || "");
@@ -185,13 +198,23 @@ export default function UsersManagementPage() {
     });
   };
 
+  const togglePassword = (id: string) => {
+    setShowPasswords((p) => ({ ...p, [id]: !p[id] }));
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("تم النسخ");
+  };
+
   const filtered = (users || []).filter((u) => {
     if (!search) return true;
     const s = search.toLowerCase();
     return (
       u.full_name?.toLowerCase().includes(s) ||
       u.email?.toLowerCase().includes(s) ||
-      u.department_name?.toLowerCase().includes(s)
+      u.department_name?.toLowerCase().includes(s) ||
+      u.generated_email?.toLowerCase().includes(s)
     );
   });
 
@@ -228,8 +251,10 @@ export default function UsersManagementPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>الاسم</TableHead>
-                <TableHead>البريد الإلكتروني</TableHead>
+                <TableHead>البريد / المعرف</TableHead>
+                <TableHead>كلمة المرور</TableHead>
                 <TableHead>القسم</TableHead>
+                <TableHead>الوظيفة</TableHead>
                 <TableHead>الأدوار</TableHead>
                 <TableHead>الحالة</TableHead>
                 <TableHead className="w-[80px]">إجراء</TableHead>
@@ -238,7 +263,7 @@ export default function UsersManagementPage() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     لا يوجد مستخدمون
                   </TableCell>
                 </TableRow>
@@ -246,8 +271,35 @@ export default function UsersManagementPage() {
                 filtered.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.full_name || "—"}</TableCell>
-                    <TableCell className="text-xs font-mono-data">{user.email || "—"}</TableCell>
+                    <TableCell className="text-xs font-mono">
+                      <div className="flex items-center gap-1">
+                        {user.generated_email || user.email || "—"}
+                        {(user.generated_email || user.email) && (
+                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => copyToClipboard(user.generated_email || user.email || "")}>
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs font-mono">
+                      {user.initial_password ? (
+                        <div className="flex items-center gap-1">
+                          <span>{showPasswords[user.id] ? user.initial_password : "••••••••"}</span>
+                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => togglePassword(user.id)}>
+                            {showPasswords[user.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => copyToClipboard(user.initial_password!)}>
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell>{user.department_name || "—"}</TableCell>
+                    <TableCell>
+                      <span className="text-xs">{user.officer_fonction || "—"}</span>
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {user.roles.length === 0 ? (
@@ -295,19 +347,19 @@ export default function UsersManagementPage() {
 
           {editUser && (
             <div className="space-y-5 py-2">
-              {/* User info */}
               <div className="space-y-1 p-3 bg-muted/50 rounded-md">
                 <p className="text-sm font-medium">{editUser.full_name || "—"}</p>
-                <p className="text-xs text-muted-foreground">{editUser.email}</p>
+                <p className="text-xs text-muted-foreground">{editUser.generated_email || editUser.email}</p>
+                {editUser.officer_fonction && (
+                  <p className="text-xs text-muted-foreground">الوظيفة: {editUser.officer_fonction}</p>
+                )}
               </div>
 
-              {/* Active toggle */}
               <div className="flex items-center justify-between">
                 <Label>الحساب نشط</Label>
                 <Switch checked={userActive} onCheckedChange={setUserActive} />
               </div>
 
-              {/* Department */}
               <div className="space-y-2">
                 <Label>القسم</Label>
                 <Select value={selectedDept} onValueChange={setSelectedDept}>
@@ -325,7 +377,6 @@ export default function UsersManagementPage() {
                 </Select>
               </div>
 
-              {/* الوظيفة (Fonction → Role) */}
               <div className="space-y-2">
                 <Label>الوظيفة</Label>
                 <Select value={selectedFonction} onValueChange={setSelectedFonction}>
