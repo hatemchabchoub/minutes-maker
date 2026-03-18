@@ -158,16 +158,17 @@ export default function UsersManagementPage() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async ({
-      user, roles, departmentId, active,
+      user, roles, departmentId, unitId, active,
     }: {
       user: UserRow;
       roles: AppRole[];
       departmentId: string | null;
+      unitId?: string | null;
       active: boolean;
     }) => {
       const { error: profileErr } = await supabase
         .from("profiles")
-        .update({ department_id: departmentId || null, active })
+        .update({ department_id: departmentId || null, unit_id: unitId || null, active })
         .eq("id", user.id);
       if (profileErr) throw profileErr;
 
