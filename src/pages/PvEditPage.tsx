@@ -479,31 +479,80 @@ const PvEditPage = () => {
                 <span className="text-xs font-medium">#{i + 1}</span>
                 <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => markDeletedViolation(realIndex)}><Trash2 className="h-3 w-3" /></Button>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Input value={v.violation_label} onChange={(e) => updateViolation(realIndex, "violation_label", e.target.value)} placeholder="وصف المخالفة" />
-                <Select value={v.violation_category} onValueChange={(val) => updateViolation(realIndex, "violation_category", val)}>
-                  <SelectTrigger><SelectValue placeholder="الصنف" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Douane">ديوانية</SelectItem>
-                    <SelectItem value="Change">صرفية</SelectItem>
-                    <SelectItem value="Droit commun">حق عام</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input value={v.legal_basis} onChange={(e) => updateViolation(realIndex, "legal_basis", e.target.value)} placeholder="الأساس القانوني" />
-                <Select value={v.severity_level} onValueChange={(val) => updateViolation(realIndex, "severity_level", val)}>
-                  <SelectTrigger><SelectValue placeholder="الخطورة" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Mineur">بسيط</SelectItem>
-                    <SelectItem value="Moyen">متوسط</SelectItem>
-                    <SelectItem value="Grave">خطير</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">وصف المخالفة *</Label>
+                  <AutocompleteWithAdd
+                    value={v.violation_label}
+                    onChange={(val) => updateViolation(realIndex, "violation_label", val)}
+                    onSelect={(opt) => {
+                      const ref = violationRefs?.find(r => r.id === opt.id);
+                      if (ref) {
+                        updateViolationMulti(realIndex, {
+                          violation_label: ref.label_ar || ref.label_fr,
+                          ...(ref.category ? { violation_category: ref.category } : {}),
+                          ...(ref.legal_basis ? { legal_basis: ref.legal_basis } : {}),
+                        });
+                      }
+                    }}
+                    options={violationOptions}
+                    placeholder="ابحث عن المخالفة..."
+                    addDialogTitle="إضافة مخالفة جديدة للمرجع"
+                    addFields={[
+                      { key: "label_ar", label: "الوصف بالعربية", required: true },
+                      { key: "label_fr", label: "الوصف بالفرنسية", required: true },
+                      { key: "category", label: "الصنف" },
+                      { key: "legal_basis", label: "الأساس القانوني" },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { data, error } = await supabase.from("violation_reference").insert({
+                        label_fr: vals.label_fr, label_ar: vals.label_ar,
+                        category: vals.category || null, legal_basis: vals.legal_basis || null,
+                      }).select("id, label_ar, label_fr, category, legal_basis").single();
+                      if (error) { toast.error(error.message); throw error; }
+                      await refreshAllRefs();
+                      updateViolationMulti(realIndex, {
+                        violation_label: data.label_ar || data.label_fr,
+                        ...(data.category ? { violation_category: data.category } : {}),
+                        ...(data.legal_basis ? { legal_basis: data.legal_basis } : {}),
+                      });
+                      toast.success("تمت إضافة المخالفة للمرجع");
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الصنف</Label>
+                  <Select value={v.violation_category} onValueChange={(val) => updateViolation(realIndex, "violation_category", val)}>
+                    <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Douane">ديوانية</SelectItem>
+                      <SelectItem value="Change">صرفية</SelectItem>
+                      <SelectItem value="Commerce">تجارية</SelectItem>
+                      <SelectItem value="Droit commun">حق عام</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الأساس القانوني</Label>
+                  <Input value={v.legal_basis} onChange={(e) => updateViolation(realIndex, "legal_basis", e.target.value)} placeholder="الفصل XX من المجلة..." />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الخطورة</Label>
+                  <Select value={v.severity_level} onValueChange={(val) => updateViolation(realIndex, "severity_level", val)}>
+                    <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Mineur">بسيطة</SelectItem>
+                      <SelectItem value="Moyen">متوسطة</SelectItem>
+                      <SelectItem value="Grave">خطيرة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           );
         })}
         <Button variant="outline" size="sm" onClick={() => setViolations([...violations, { violation_label: "", violation_category: "", legal_basis: "", severity_level: "" }])}>
-          <Plus className="h-4 w-4" />إضافة
+          <Plus className="h-4 w-4" />إضافة مخالفة
         </Button>
       </div>
 
@@ -518,29 +567,98 @@ const PvEditPage = () => {
                 <span className="text-xs font-medium">#{i + 1}</span>
                 <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => markDeletedSeizure(realIndex)}><Trash2 className="h-3 w-3" /></Button>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Input value={s.goods_category} onChange={(e) => updateSeizure(realIndex, "goods_category", e.target.value)} placeholder="الصنف" />
-                <Input value={s.goods_type} onChange={(e) => updateSeizure(realIndex, "goods_type", e.target.value)} placeholder="النوع" />
-                <Select value={s.seizure_type} onValueChange={(v) => updateSeizure(realIndex, "seizure_type", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="actual">فعلي</SelectItem>
-                    <SelectItem value="virtual">صوري</SelectItem>
-                    <SelectItem value="precautionary">تحفظي</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input type="number" value={s.quantity} onChange={(e) => updateSeizure(realIndex, "quantity", e.target.value)} placeholder="الكمية" />
-                <Input value={s.unit} onChange={(e) => updateSeizure(realIndex, "unit", e.target.value)} placeholder="الوحدة" />
-                <Input type="number" step="0.001" value={s.estimated_value} onChange={(e) => updateSeizure(realIndex, "estimated_value", e.target.value)} placeholder="القيمة" />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">الصنف</Label>
+                  <AutocompleteWithAdd
+                    value={s.goods_category}
+                    onChange={(val) => updateSeizureMulti(realIndex, { goods_category: val, goods_type: "" })}
+                    options={goodsCategoryOptions}
+                    placeholder="ابحث عن صنف البضاعة..."
+                    addDialogTitle="إضافة صنف بضاعة جديد"
+                    addFields={[
+                      { key: "category_ar", label: "الصنف بالعربية", required: true },
+                      { key: "category_fr", label: "الصنف بالفرنسية", required: true },
+                      { key: "type_ar", label: "النوع بالعربية" },
+                      { key: "type_fr", label: "النوع بالفرنسية" },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { error } = await supabase.from("goods_reference").insert({
+                        category_fr: vals.category_fr, category_ar: vals.category_ar,
+                        type_fr: vals.type_fr || null, type_ar: vals.type_ar || null,
+                      });
+                      if (error) { toast.error(error.message); throw error; }
+                      await refreshAllRefs();
+                      updateSeizure(realIndex, "goods_category", vals.category_ar || vals.category_fr);
+                      if (vals.type_ar) updateSeizure(realIndex, "goods_type", vals.type_ar);
+                      toast.success("تمت إضافة صنف البضاعة");
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">نوع البضاعة</Label>
+                  <AutocompleteWithAdd
+                    value={s.goods_type}
+                    onChange={(val) => updateSeizure(realIndex, "goods_type", val)}
+                    options={getGoodsTypeOptions(s.goods_category)}
+                    placeholder="ابحث عن نوع البضاعة..."
+                    addDialogTitle="إضافة نوع بضاعة جديد"
+                    addFields={[
+                      { key: "category_ar", label: "الصنف بالعربية", required: true },
+                      { key: "category_fr", label: "الصنف بالفرنسية", required: true },
+                      { key: "type_ar", label: "النوع بالعربية", required: true },
+                      { key: "type_fr", label: "النوع بالفرنسية", required: true },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { error } = await supabase.from("goods_reference").insert({
+                        category_fr: vals.category_fr, category_ar: vals.category_ar,
+                        type_fr: vals.type_fr, type_ar: vals.type_ar,
+                      });
+                      if (error) { toast.error(error.message); throw error; }
+                      await refreshAllRefs();
+                      updateSeizure(realIndex, "goods_type", vals.type_ar || vals.type_fr);
+                      if (vals.category_ar) updateSeizure(realIndex, "goods_category", vals.category_ar);
+                      toast.success("تمت إضافة نوع البضاعة");
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">نوع الحجز</Label>
+                  <Select value={s.seizure_type} onValueChange={(v) => updateSeizure(realIndex, "seizure_type", v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="actual">فعلي</SelectItem>
+                      <SelectItem value="virtual">صوري</SelectItem>
+                      <SelectItem value="precautionary">تحفظي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الكمية</Label>
+                  <Input type="number" value={s.quantity} onChange={(e) => updateSeizure(realIndex, "quantity", e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">الوحدة</Label>
+                  <Input value={s.unit} onChange={(e) => updateSeizure(realIndex, "unit", e.target.value)} placeholder="كغ، قطعة..." />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">القيمة التقديرية (د.ت)</Label>
+                  <Input type="number" step="0.001" value={s.estimated_value} onChange={(e) => updateSeizure(realIndex, "estimated_value", e.target.value)} />
+                </div>
               </div>
             </div>
           );
         })}
         <div className="flex items-center justify-between">
           <Button variant="outline" size="sm" onClick={() => setSeizures([...seizures, { goods_category: "", goods_type: "", quantity: "", unit: "", estimated_value: "", seizure_type: "actual" }])}>
-            <Plus className="h-4 w-4" />إضافة
+            <Plus className="h-4 w-4" />إضافة بضاعة
           </Button>
-          <span className="text-sm font-medium">المجموع: <span className="font-mono-data">{formatCurrency(totalActual + totalVirtual + totalPrecautionary)}</span></span>
+          <div className="text-sm space-x-4 space-x-reverse">
+            <span className="text-muted-foreground">فعلي: <span className="font-mono text-foreground">{formatCurrency(totalActual)}</span></span>
+            <span className="text-muted-foreground">صوري: <span className="font-mono text-foreground">{formatCurrency(totalVirtual)}</span></span>
+            <span className="text-muted-foreground">تحفظي: <span className="font-mono text-foreground">{formatCurrency(totalPrecautionary)}</span></span>
+            <span className="font-medium">المجموع: <span className="font-mono">{formatCurrency(totalActual + totalVirtual + totalPrecautionary)}</span></span>
+          </div>
         </div>
       </div>
 
