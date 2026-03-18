@@ -135,13 +135,47 @@ const PvWizardPage = () => {
     },
   });
 
-  const { data: referralSources } = useQuery({
+  const { data: referralSources, refetch: refetchReferralSources } = useQuery({
     queryKey: ["ref-referral-sources"],
     queryFn: async () => {
       const { data } = await supabase.from("referral_sources").select("id, label_fr, label_ar").eq("active", true).order("label_fr");
       return data || [];
     },
   });
+
+  const { data: violationRefs, refetch: refetchViolationRefs } = useQuery({
+    queryKey: ["ref-violation-reference"],
+    queryFn: async () => {
+      const { data } = await supabase.from("violation_reference").select("id, label_fr, label_ar, category, legal_basis").eq("active", true).order("label_fr");
+      return data || [];
+    },
+  });
+
+  const { data: goodsRefs, refetch: refetchGoodsRefs } = useQuery({
+    queryKey: ["ref-goods-reference"],
+    queryFn: async () => {
+      const { data } = await supabase.from("goods_reference").select("id, category_fr, category_ar, type_fr, type_ar").eq("active", true).order("category_fr");
+      return data || [];
+    },
+  });
+
+  const violationOptions: AutocompleteOption[] = (violationRefs || []).map(v => ({
+    id: v.id, label: v.label_ar || v.label_fr, sublabel: v.category || undefined,
+  }));
+
+  const referralOptions: AutocompleteOption[] = (referralSources || []).map(r => ({
+    id: r.id, label: r.label_ar || r.label_fr,
+  }));
+
+  const goodsCategoryOptions: AutocompleteOption[] = Array.from(
+    new Map((goodsRefs || []).map(g => [g.category_ar || g.category_fr, g])).values()
+  ).map(g => ({ id: g.id, label: g.category_ar || g.category_fr }));
+
+  const goodsTypeOptions: AutocompleteOption[] = (goodsRefs || []).map(g => ({
+    id: g.id, label: g.type_ar || g.type_fr || g.category_ar || g.category_fr, sublabel: g.category_ar || g.category_fr,
+  }));
+
+  const [referralSourceLabel, setReferralSourceLabel] = useState("");
 
   const updateOffender = (i: number, field: keyof Offender, value: string) => {
     const updated = [...offenders]; updated[i] = { ...updated[i], [field]: value }; setOffenders(updated);
