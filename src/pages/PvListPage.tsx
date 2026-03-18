@@ -484,8 +484,8 @@ const PvListPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              groupedPvs.map(({ pv, isChild, childCount }) => (
-                <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""}`}>
+              groupedPvs.map(({ pv, isChild, childCount, isExpanded }) => (
+                <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""} ${isChild && !isExpanded ? "hidden print:table-row" : ""}`}>
                   <TableCell className="no-print-col">
                     <Checkbox
                       checked={selectedIds.has(pv.id)}
