@@ -356,11 +356,13 @@ const DashboardPage = () => {
       </div>
 
       {/* KPI Grid with trends */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KpiCard className="animate-fade-in-up stagger-1" label="مجموع المحاضر" value={stats?.totalPv || 0} icon={FileText} variant="primary" trend={trendText(stats?.pvTrend ?? null)} />
-        <KpiCard className="animate-fade-in-up stagger-2" label="المحجوز الكلي (د.ت)" value={fmt(stats?.totalSeizure || 0)} icon={DollarSign} variant="success" trend={trendText(stats?.seizureTrend ?? null)} />
-        <KpiCard className="animate-fade-in-up stagger-3" label="المخالفون" value={offenderCount || 0} icon={Users} />
-        <KpiCard className="animate-fade-in-up stagger-4" label="متوسط المحجوز / محضر" value={stats && stats.totalPv > 0 ? fmt(Math.round(stats.totalSeizure / stats.totalPv)) : "—"} icon={TrendingUp} variant="primary" />
+        <KpiCard className="animate-fade-in-up stagger-2" label="محاضر رئيسية" value={stats?.parentPvCount || 0} icon={FileText} />
+        <KpiCard className="animate-fade-in-up stagger-3" label="أضلع (فرعية)" value={stats?.subPvCount || 0} icon={FileText} />
+        <KpiCard className="animate-fade-in-up stagger-4" label="المحجوز الكلي (د.ت)" value={fmt(stats?.totalSeizure || 0)} icon={DollarSign} variant="success" trend={trendText(stats?.seizureTrend ?? null)} />
+        <KpiCard className="animate-fade-in-up stagger-5" label="المخالفون" value={offenderCount || 0} icon={Users} />
+        <KpiCard className="animate-fade-in-up stagger-6" label="متوسط المحجوز / محضر" value={stats && stats.totalPv > 0 ? fmt(Math.round(stats.totalSeizure / stats.totalPv)) : "—"} icon={TrendingUp} variant="primary" />
       </div>
 
       {/* Comparison bar if available */}
