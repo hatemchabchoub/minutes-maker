@@ -13,6 +13,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, ArrowLeft, ArrowRight, Save, Check, AlertCircle } from "lucide-react";
 import ParentPvSelector from "@/components/pv/ParentPvSelector";
+import { AutocompleteWithAdd, AutocompleteOption } from "@/components/ui/autocomplete-with-add";
 import { toast } from "sonner";
 
 const steps = [
@@ -134,13 +135,47 @@ const PvWizardPage = () => {
     },
   });
 
-  const { data: referralSources } = useQuery({
+  const { data: referralSources, refetch: refetchReferralSources } = useQuery({
     queryKey: ["ref-referral-sources"],
     queryFn: async () => {
       const { data } = await supabase.from("referral_sources").select("id, label_fr, label_ar").eq("active", true).order("label_fr");
       return data || [];
     },
   });
+
+  const { data: violationRefs, refetch: refetchViolationRefs } = useQuery({
+    queryKey: ["ref-violation-reference"],
+    queryFn: async () => {
+      const { data } = await supabase.from("violation_reference").select("id, label_fr, label_ar, category, legal_basis").eq("active", true).order("label_fr");
+      return data || [];
+    },
+  });
+
+  const { data: goodsRefs, refetch: refetchGoodsRefs } = useQuery({
+    queryKey: ["ref-goods-reference"],
+    queryFn: async () => {
+      const { data } = await supabase.from("goods_reference").select("id, category_fr, category_ar, type_fr, type_ar").eq("active", true).order("category_fr");
+      return data || [];
+    },
+  });
+
+  const violationOptions: AutocompleteOption[] = (violationRefs || []).map(v => ({
+    id: v.id, label: v.label_ar || v.label_fr, sublabel: v.category || undefined,
+  }));
+
+  const referralOptions: AutocompleteOption[] = (referralSources || []).map(r => ({
+    id: r.id, label: r.label_ar || r.label_fr,
+  }));
+
+  const goodsCategoryOptions: AutocompleteOption[] = Array.from(
+    new Map((goodsRefs || []).map(g => [g.category_ar || g.category_fr, g])).values()
+  ).map(g => ({ id: g.id, label: g.category_ar || g.category_fr }));
+
+  const goodsTypeOptions: AutocompleteOption[] = (goodsRefs || []).map(g => ({
+    id: g.id, label: g.type_ar || g.type_fr || g.category_ar || g.category_fr, sublabel: g.category_ar || g.category_fr,
+  }));
+
+  const [referralSourceLabel, setReferralSourceLabel] = useState("");
 
   const updateOffender = (i: number, field: keyof Offender, value: string) => {
     const updated = [...offenders]; updated[i] = { ...updated[i], [field]: value }; setOffenders(updated);
@@ -340,14 +375,32 @@ const PvWizardPage = () => {
             </div>
             <div className="space-y-2">
               <Label>مصدر الإحالة</Label>
-              <Select value={referralSourceId} onValueChange={setReferralSourceId}>
-                <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
-                <SelectContent>
-                  {referralSources?.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.label_ar || r.label_fr}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <AutocompleteWithAdd
+                value={referralSourceLabel}
+                onChange={(val) => {
+                  setReferralSourceLabel(val);
+                  const match = referralSources?.find(r => (r.label_ar || r.label_fr) === val);
+                  setReferralSourceId(match?.id || "");
+                }}
+                onSelect={(opt) => { setReferralSourceId(opt.id); setReferralSourceLabel(opt.label); }}
+                options={referralOptions}
+                placeholder="ابحث عن مصدر الإحالة..."
+                addDialogTitle="إضافة مصدر إحالة جديد"
+                addFields={[
+                  { key: "label_ar", label: "الاسم بالعربية", required: true },
+                  { key: "label_fr", label: "الاسم بالفرنسية", required: true },
+                ]}
+                onAddNew={async (vals) => {
+                  const { data, error } = await supabase.from("referral_sources").insert({
+                    label_fr: vals.label_fr, label_ar: vals.label_ar,
+                  }).select("id, label_fr, label_ar").single();
+                  if (error) { toast.error(error.message); throw error; }
+                  await refetchReferralSources();
+                  setReferralSourceId(data.id);
+                  setReferralSourceLabel(data.label_ar || data.label_fr);
+                  toast.success("تمت إضافة مصدر الإحالة");
+                }}
+              />
             </div>
             <div className="space-y-2">
               <Label>نوع الوثيقة</Label>
@@ -463,7 +516,39 @@ const PvWizardPage = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">وصف المخالفة *</Label>
-                  <Input value={v.violation_label} onChange={(e) => updateViolation(i, "violation_label", e.target.value)} />
+                  <AutocompleteWithAdd
+                    value={v.violation_label}
+                    onChange={(val) => updateViolation(i, "violation_label", val)}
+                    onSelect={(opt) => {
+                      const ref = violationRefs?.find(r => r.id === opt.id);
+                      if (ref) {
+                        updateViolation(i, "violation_label", ref.label_ar || ref.label_fr);
+                        if (ref.category) updateViolation(i, "violation_category", ref.category);
+                        if (ref.legal_basis) updateViolation(i, "legal_basis", ref.legal_basis);
+                      }
+                    }}
+                    options={violationOptions}
+                    placeholder="ابحث عن المخالفة..."
+                    addDialogTitle="إضافة مخالفة جديدة للمرجع"
+                    addFields={[
+                      { key: "label_ar", label: "الوصف بالعربية", required: true },
+                      { key: "label_fr", label: "الوصف بالفرنسية", required: true },
+                      { key: "category", label: "الصنف" },
+                      { key: "legal_basis", label: "الأساس القانوني" },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { data, error } = await supabase.from("violation_reference").insert({
+                        label_fr: vals.label_fr, label_ar: vals.label_ar,
+                        category: vals.category || null, legal_basis: vals.legal_basis || null,
+                      }).select("id, label_ar, label_fr, category, legal_basis").single();
+                      if (error) { toast.error(error.message); throw error; }
+                      await refetchViolationRefs();
+                      updateViolation(i, "violation_label", data.label_ar || data.label_fr);
+                      if (data.category) updateViolation(i, "violation_category", data.category);
+                      if (data.legal_basis) updateViolation(i, "legal_basis", data.legal_basis);
+                      toast.success("تمت إضافة المخالفة للمرجع");
+                    }}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">الصنف</Label>
@@ -519,11 +604,57 @@ const PvWizardPage = () => {
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">الصنف</Label>
-                  <Input value={s.goods_category} onChange={(e) => updateSeizure(i, "goods_category", e.target.value)} />
+                  <AutocompleteWithAdd
+                    value={s.goods_category}
+                    onChange={(val) => updateSeizure(i, "goods_category", val)}
+                    options={goodsCategoryOptions}
+                    placeholder="ابحث عن صنف البضاعة..."
+                    addDialogTitle="إضافة صنف بضاعة جديد"
+                    addFields={[
+                      { key: "category_ar", label: "الصنف بالعربية", required: true },
+                      { key: "category_fr", label: "الصنف بالفرنسية", required: true },
+                      { key: "type_ar", label: "النوع بالعربية" },
+                      { key: "type_fr", label: "النوع بالفرنسية" },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { error } = await supabase.from("goods_reference").insert({
+                        category_fr: vals.category_fr, category_ar: vals.category_ar,
+                        type_fr: vals.type_fr || null, type_ar: vals.type_ar || null,
+                      });
+                      if (error) { toast.error(error.message); throw error; }
+                      await refetchGoodsRefs();
+                      updateSeizure(i, "goods_category", vals.category_ar || vals.category_fr);
+                      if (vals.type_ar) updateSeizure(i, "goods_type", vals.type_ar);
+                      toast.success("تمت إضافة صنف البضاعة");
+                    }}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">نوع البضاعة</Label>
-                  <Input value={s.goods_type} onChange={(e) => updateSeizure(i, "goods_type", e.target.value)} />
+                  <AutocompleteWithAdd
+                    value={s.goods_type}
+                    onChange={(val) => updateSeizure(i, "goods_type", val)}
+                    options={goodsTypeOptions}
+                    placeholder="ابحث عن نوع البضاعة..."
+                    addDialogTitle="إضافة نوع بضاعة جديد"
+                    addFields={[
+                      { key: "category_ar", label: "الصنف بالعربية", required: true },
+                      { key: "category_fr", label: "الصنف بالفرنسية", required: true },
+                      { key: "type_ar", label: "النوع بالعربية", required: true },
+                      { key: "type_fr", label: "النوع بالفرنسية", required: true },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { error } = await supabase.from("goods_reference").insert({
+                        category_fr: vals.category_fr, category_ar: vals.category_ar,
+                        type_fr: vals.type_fr, type_ar: vals.type_ar,
+                      });
+                      if (error) { toast.error(error.message); throw error; }
+                      await refetchGoodsRefs();
+                      updateSeizure(i, "goods_type", vals.type_ar || vals.type_fr);
+                      if (vals.category_ar) updateSeizure(i, "goods_category", vals.category_ar);
+                      toast.success("تمت إضافة نوع البضاعة");
+                    }}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">نوع الحجز</Label>
