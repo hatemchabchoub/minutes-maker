@@ -614,10 +614,7 @@ const PvWizardPage = () => {
                   <Label className="text-xs">الصنف</Label>
                   <AutocompleteWithAdd
                     value={s.goods_category}
-                    onChange={(val) => {
-                      updateSeizure(i, "goods_category", val);
-                      updateSeizure(i, "goods_type", "");
-                    }}
+                    onChange={(val) => updateSeizureMulti(i, { goods_category: val, goods_type: "" })}
                     options={goodsCategoryOptions}
                     placeholder="ابحث عن صنف البضاعة..."
                     addDialogTitle="إضافة صنف بضاعة جديد"
