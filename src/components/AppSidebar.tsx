@@ -104,7 +104,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar side="left" collapsible="none">
+    <Sidebar side="right" collapsible="none">
       <SidebarContent className="relative overflow-hidden">
         {/* Decorative gradient orb */}
         <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-sidebar-primary/10 blur-3xl pointer-events-none" />
