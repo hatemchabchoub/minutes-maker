@@ -641,7 +641,7 @@ const PvWizardPage = () => {
                         type_fr: vals.type_fr || null, type_ar: vals.type_ar || null,
                       });
                       if (error) { toast.error(error.message); throw error; }
-                      await refetchGoodsRefs();
+                       await refreshAllRefs();
                       updateSeizure(i, "goods_category", vals.category_ar || vals.category_fr);
                       if (vals.type_ar) updateSeizure(i, "goods_type", vals.type_ar);
                       toast.success("تمت إضافة صنف البضاعة");
