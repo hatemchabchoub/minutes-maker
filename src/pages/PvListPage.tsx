@@ -258,10 +258,10 @@ const PvListPage = () => {
                   onCheckedChange={toggleSelectAll}
                 />
               </TableHead>
-              <TableHead>القسم</TableHead>
               <TableHead>النوع</TableHead>
               <TableHead>عدد المحضر</TableHead>
               <TableHead>التاريخ</TableHead>
+              <TableHead>القسم</TableHead>
               <TableHead>الضابط</TableHead>
               <TableHead className="min-w-[200px]">المخالفات</TableHead>
               <TableHead className="text-end">حجز فعلي</TableHead>
