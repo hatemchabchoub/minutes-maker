@@ -322,7 +322,7 @@ export default function UsersManagementPage() {
                       />
                       <div>
                         <span className="text-sm font-medium">{ROLE_LABELS[role]}</span>
-                        <span className="text-xs text-muted-foreground mr-2">({role})</span>
+                        <span className="text-xs text-muted-foreground me-2">({role})</span>
                       </div>
                     </label>
                   ))}

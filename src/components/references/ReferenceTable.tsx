@@ -128,7 +128,7 @@ export function ReferenceTable({
           />
         </div>
         <Button onClick={openAdd} size="sm">
-          <Plus className="h-4 w-4 ml-1" />
+          <Plus className="h-4 w-4 ms-1" />
           إضافة
         </Button>
       </div>
