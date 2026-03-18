@@ -307,16 +307,16 @@ export default function PvRecapSummary({ parentPvId }: Props) {
         </Table>
 
         {/* Totals */}
-        <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t">
+        <div className="mt-4 grid grid-cols-4 gap-4 border-t pt-4 [direction:rtl]">
           {([
             ["حجز فعلي", totalActual],
             ["حجز صوري", totalVirtual],
             ["حجز تحفظي", totalPrecautionary],
             ["المجموع الكلي", totalAll],
           ] as [string, number][]).map(([label, val]) => (
-            <div key={label}>
+            <div key={label} className="text-start">
               <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="text-lg font-semibold font-mono-data mt-1">{fmt(val)}</p>
+              <p className="mt-1 text-lg font-semibold font-mono-data">{fmt(val)}</p>
             </div>
           ))}
         </div>
