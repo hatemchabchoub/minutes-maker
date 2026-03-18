@@ -237,15 +237,15 @@ const PvListPage = () => {
     });
     const orphanChildren = all.filter(p => p.parent_pv_id && !parents.find(pp => pp.id === p.parent_pv_id));
 
-    const result: { pv: any; isChild: boolean; childCount: number }[] = [];
+    const result: { pv: any; isChild: boolean; childCount: number; isExpanded: boolean }[] = [];
     parents.forEach(p => {
       const children = childrenMap[p.id] || [];
-      result.push({ pv: p, isChild: false, childCount: children.length });
-      if (expandedGroups.has(p.id)) {
-        children.forEach(c => result.push({ pv: c, isChild: true, childCount: 0 }));
-      }
+      const isExpanded = expandedGroups.has(p.id);
+      result.push({ pv: p, isChild: false, childCount: children.length, isExpanded });
+      // Always include children in DOM; hide via CSS when not expanded (show in print)
+      children.forEach(c => result.push({ pv: c, isChild: true, childCount: 0, isExpanded }));
     });
-    orphanChildren.forEach(c => result.push({ pv: c, isChild: true, childCount: 0 }));
+    orphanChildren.forEach(c => result.push({ pv: c, isChild: true, childCount: 0, isExpanded: true }));
     return result;
   }, [pvData?.data, expandedGroups]);
 
@@ -484,8 +484,8 @@ const PvListPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              groupedPvs.map(({ pv, isChild, childCount }) => (
-                <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""}`}>
+              groupedPvs.map(({ pv, isChild, childCount, isExpanded }) => (
+                <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""} ${isChild && !isExpanded ? "hidden print:table-row" : ""}`}>
                   <TableCell className="no-print-col">
                     <Checkbox
                       checked={selectedIds.has(pv.id)}
