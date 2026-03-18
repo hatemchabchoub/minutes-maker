@@ -25,7 +25,13 @@ const ROLE_LABELS: Record<AppRole, string> = {
   viewer: "مطالع",
 };
 
-const ALL_ROLES: AppRole[] = ["admin", "national_supervisor", "department_supervisor", "officer", "viewer"];
+interface FonctionRow {
+  id: string;
+  label_ar: string;
+  label_fr: string | null;
+  mapped_role: string | null;
+  active: boolean | null;
+}
 
 interface UserRow {
   id: string;
