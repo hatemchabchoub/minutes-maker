@@ -166,7 +166,7 @@ export default function ReferencesPage() {
 
   // Custom officer add/update that also assigns role
   const handleOfficerAdd = async (item: Record<string, any>) => {
-    const authUserId = item.auth_user_id || null;
+    const authUserId = (item.auth_user_id && item.auth_user_id !== "none") ? item.auth_user_id : null;
     const fonction = item.fonction || null;
     await officers.add({ ...item, auth_user_id: authUserId || null });
     if (authUserId && fonction) {
