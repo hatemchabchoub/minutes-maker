@@ -197,7 +197,10 @@ const PvWizardPage = () => {
     const updated = [...offenders]; updated[i] = { ...updated[i], [field]: value }; setOffenders(updated);
   };
   const updateViolation = (i: number, field: keyof Violation, value: string) => {
-    const updated = [...violations]; updated[i] = { ...updated[i], [field]: value }; setViolations(updated);
+    setViolations(prev => { const updated = [...prev]; updated[i] = { ...updated[i], [field]: value }; return updated; });
+  };
+  const updateViolationMulti = (i: number, fields: Partial<Violation>) => {
+    setViolations(prev => { const updated = [...prev]; updated[i] = { ...updated[i], ...fields }; return updated; });
   };
   const updateSeizure = (i: number, field: keyof Seizure, value: string) => {
     setSeizures(prev => { const updated = [...prev]; updated[i] = { ...updated[i], [field]: value }; return updated; });
