@@ -523,11 +523,20 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Seizure breakdown mini cards */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Seizure breakdown with highlighted total */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MiniSeizureCard label="المحجوز الفعلي" value={stats?.totalActual || 0} color={CHART_COLORS[0]} icon={Shield} />
         <MiniSeizureCard label="المحجوز الصوري" value={stats?.totalVirtual || 0} color={CHART_COLORS[3]} icon={BarChart3} />
         <MiniSeizureCard label="المحجوز التحفظي" value={stats?.totalPrecautionary || 0} color={CHART_COLORS[2]} icon={AlertTriangle} />
+        <div className="surface-elevated p-4 border-2 border-primary bg-primary/5 rounded-xl flex items-center gap-3 ring-2 ring-primary/20 shadow-lg">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/15">
+            <DollarSign className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-[10px] text-primary font-semibold tracking-wide">المجموع الكلي (د.ت)</p>
+            <p className="text-xl font-bold font-mono-data text-primary">{fmt(stats?.totalSeizure || 0)}</p>
+          </div>
+        </div>
       </div>
 
       {/* Row 3: Recent PVs + Top Offenders */}
