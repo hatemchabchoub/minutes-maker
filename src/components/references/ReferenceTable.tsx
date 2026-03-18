@@ -119,12 +119,12 @@ export function ReferenceTable({
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="بحث..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pr-9"
+            className="pe-9"
           />
         </div>
         <Button onClick={openAdd} size="sm">
