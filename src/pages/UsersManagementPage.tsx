@@ -326,26 +326,32 @@ export default function UsersManagementPage() {
                 </Select>
               </div>
 
-              {/* Roles */}
-              <div className="space-y-3">
-                <Label>الأدوار</Label>
-                <div className="space-y-2">
-                  {ALL_ROLES.map((role) => (
-                    <label
-                      key={role}
-                      className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={selectedRoles.includes(role)}
-                        onCheckedChange={() => toggleRole(role)}
-                      />
-                      <div>
-                        <span className="text-sm font-medium">{ROLE_LABELS[role]}</span>
-                        <span className="text-xs text-muted-foreground me-2">({role})</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
+              {/* الوظيفة (Fonction → Role) */}
+              <div className="space-y-2">
+                <Label>الوظيفة</Label>
+                <Select value={selectedFonction} onValueChange={setSelectedFonction}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختيار الوظيفة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— بدون وظيفة —</SelectItem>
+                    {fonctions?.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.label_ar}
+                        {f.mapped_role && (
+                          <span className="text-muted-foreground text-xs ms-2">
+                            ({ROLE_LABELS[f.mapped_role as AppRole] || f.mapped_role})
+                          </span>
+                        )}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedFonction && selectedFonction !== "none" && (
+                  <p className="text-xs text-muted-foreground">
+                    الدور المرتبط: {ROLE_LABELS[(fonctions?.find(f => f.id === selectedFonction)?.mapped_role as AppRole)] || "ضابط"}
+                  </p>
+                )}
               </div>
             </div>
           )}
