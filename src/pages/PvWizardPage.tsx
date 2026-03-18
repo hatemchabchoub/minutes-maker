@@ -516,7 +516,39 @@ const PvWizardPage = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">وصف المخالفة *</Label>
-                  <Input value={v.violation_label} onChange={(e) => updateViolation(i, "violation_label", e.target.value)} />
+                  <AutocompleteWithAdd
+                    value={v.violation_label}
+                    onChange={(val) => updateViolation(i, "violation_label", val)}
+                    onSelect={(opt) => {
+                      const ref = violationRefs?.find(r => r.id === opt.id);
+                      if (ref) {
+                        updateViolation(i, "violation_label", ref.label_ar || ref.label_fr);
+                        if (ref.category) updateViolation(i, "violation_category", ref.category);
+                        if (ref.legal_basis) updateViolation(i, "legal_basis", ref.legal_basis);
+                      }
+                    }}
+                    options={violationOptions}
+                    placeholder="ابحث عن المخالفة..."
+                    addDialogTitle="إضافة مخالفة جديدة للمرجع"
+                    addFields={[
+                      { key: "label_ar", label: "الوصف بالعربية", required: true },
+                      { key: "label_fr", label: "الوصف بالفرنسية", required: true },
+                      { key: "category", label: "الصنف" },
+                      { key: "legal_basis", label: "الأساس القانوني" },
+                    ]}
+                    onAddNew={async (vals) => {
+                      const { data, error } = await supabase.from("violation_reference").insert({
+                        label_fr: vals.label_fr, label_ar: vals.label_ar,
+                        category: vals.category || null, legal_basis: vals.legal_basis || null,
+                      }).select("id, label_ar, label_fr, category, legal_basis").single();
+                      if (error) { toast.error(error.message); throw error; }
+                      await refetchViolationRefs();
+                      updateViolation(i, "violation_label", data.label_ar || data.label_fr);
+                      if (data.category) updateViolation(i, "violation_category", data.category);
+                      if (data.legal_basis) updateViolation(i, "legal_basis", data.legal_basis);
+                      toast.success("تمت إضافة المخالفة للمرجع");
+                    }}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">الصنف</Label>
