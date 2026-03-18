@@ -197,7 +197,10 @@ const PvWizardPage = () => {
     const updated = [...offenders]; updated[i] = { ...updated[i], [field]: value }; setOffenders(updated);
   };
   const updateViolation = (i: number, field: keyof Violation, value: string) => {
-    const updated = [...violations]; updated[i] = { ...updated[i], [field]: value }; setViolations(updated);
+    setViolations(prev => { const updated = [...prev]; updated[i] = { ...updated[i], [field]: value }; return updated; });
+  };
+  const updateViolationMulti = (i: number, fields: Partial<Violation>) => {
+    setViolations(prev => { const updated = [...prev]; updated[i] = { ...updated[i], ...fields }; return updated; });
   };
   const updateSeizure = (i: number, field: keyof Seizure, value: string) => {
     setSeizures(prev => { const updated = [...prev]; updated[i] = { ...updated[i], [field]: value }; return updated; });
@@ -541,9 +544,11 @@ const PvWizardPage = () => {
                     onSelect={(opt) => {
                       const ref = violationRefs?.find(r => r.id === opt.id);
                       if (ref) {
-                        updateViolation(i, "violation_label", ref.label_ar || ref.label_fr);
-                        if (ref.category) updateViolation(i, "violation_category", ref.category);
-                        if (ref.legal_basis) updateViolation(i, "legal_basis", ref.legal_basis);
+                        updateViolationMulti(i, {
+                          violation_label: ref.label_ar || ref.label_fr,
+                          ...(ref.category ? { violation_category: ref.category } : {}),
+                          ...(ref.legal_basis ? { legal_basis: ref.legal_basis } : {}),
+                        });
                       }
                     }}
                     options={violationOptions}
@@ -562,9 +567,11 @@ const PvWizardPage = () => {
                       }).select("id, label_ar, label_fr, category, legal_basis").single();
                       if (error) { toast.error(error.message); throw error; }
                       await refreshAllRefs();
-                      updateViolation(i, "violation_label", data.label_ar || data.label_fr);
-                      if (data.category) updateViolation(i, "violation_category", data.category);
-                      if (data.legal_basis) updateViolation(i, "legal_basis", data.legal_basis);
+                      updateViolationMulti(i, {
+                        violation_label: data.label_ar || data.label_fr,
+                        ...(data.category ? { violation_category: data.category } : {}),
+                        ...(data.legal_basis ? { legal_basis: data.legal_basis } : {}),
+                      });
                       toast.success("تمت إضافة المخالفة للمرجع");
                     }}
                   />
