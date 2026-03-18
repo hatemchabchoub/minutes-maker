@@ -246,8 +246,6 @@ const PvWizardPage = () => {
         referral_type: referralType || null, referral_source_id: referralSourceId || null,
         pv_type: pvType || null, case_status: status,
         parent_pv_id: pvType === "ضلع" && parentPvId ? parentPvId : null,
-        customs_violation: customsViolation, currency_violation: currencyViolation,
-        public_law_violation: publicLawViolation, seizure_renewal: seizureRenewal,
         total_actual_seizure: totalActual, total_virtual_seizure: totalVirtual,
         total_precautionary_seizure: totalPrecautionary,
         notes: notes || null, source_import_type: sourceImportId ? "ocr" : "manual",
