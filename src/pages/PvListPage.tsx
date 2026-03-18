@@ -19,7 +19,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  FilePlus, Search, Download, Eye, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
+  FilePlus, Search, Download, Eye, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Printer,
 } from "lucide-react";
 import { exportPvToExcel } from "@/lib/excel-export";
 
@@ -245,14 +245,18 @@ const PvListPage = () => {
           <Download className="h-4 w-4" />
           {exporting ? "جاري التصدير..." : "تصدير"}
         </Button>
+        <Button variant="outline" size="sm" onClick={() => window.print()}>
+          <Printer className="h-4 w-4" />
+          طباعة
+        </Button>
       </div>
 
       {/* Table */}
-      <div className="surface-glass overflow-hidden">
+      <div className="surface-glass overflow-hidden print-list">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-10">
+              <TableHead className="w-10 no-print-col">
                 <Checkbox
                   checked={allOnPageSelected}
                   onCheckedChange={toggleSelectAll}
@@ -269,7 +273,7 @@ const PvListPage = () => {
               <TableHead className="text-end">حجز تحفظي</TableHead>
               <TableHead className="text-end">المجموع</TableHead>
               <TableHead>الحالة</TableHead>
-              <TableHead className="w-[100px]">إجراءات</TableHead>
+              <TableHead className="w-[100px] no-print-col">إجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -294,7 +298,7 @@ const PvListPage = () => {
             ) : (
               groupedPvs.map(({ pv, isChild, childCount }) => (
                 <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""}`}>
-                  <TableCell>
+                  <TableCell className="no-print-col">
                     <Checkbox
                       checked={selectedIds.has(pv.id)}
                       onCheckedChange={() => toggleSelect(pv.id)}
@@ -336,7 +340,7 @@ const PvListPage = () => {
                   <TableCell className="text-end font-mono text-sm">{formatCurrency(pv.total_precautionary_seizure || 0)}</TableCell>
                   <TableCell className="text-end font-mono text-sm font-semibold">{formatCurrency(pv.total_seizure || 0)}</TableCell>
                   <TableCell><StatusBadge status={pv.case_status as CaseStatus} /></TableCell>
-                  <TableCell>
+                  <TableCell className="no-print-col">
                     <div className="flex items-center gap-1">
                       <Link to={`/pv/${pv.id}`}><Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button></Link>
                       <Link to={`/pv/${pv.id}/edit`}><Button variant="ghost" size="icon" className="h-7 w-7"><Pencil className="h-3.5 w-3.5" /></Button></Link>
