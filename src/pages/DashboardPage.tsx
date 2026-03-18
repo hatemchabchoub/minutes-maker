@@ -16,7 +16,7 @@ import {
   FileText,
   Users,
   AlertTriangle,
-  DollarSign,
+  Banknote,
   TrendingUp,
   TrendingDown,
   Shield,
