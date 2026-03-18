@@ -96,6 +96,43 @@ const PvEditPage = () => {
     },
   });
 
+  const { data: violationRefs, refetch: refetchViolationRefs } = useQuery({
+    queryKey: ["ref-violation-reference"],
+    queryFn: async () => {
+      const { data } = await supabase.from("violation_reference").select("id, label_fr, label_ar, category, legal_basis").eq("active", true).order("label_fr");
+      return data || [];
+    },
+  });
+
+  const { data: goodsRefs, refetch: refetchGoodsRefs } = useQuery({
+    queryKey: ["ref-goods-reference"],
+    queryFn: async () => {
+      const { data } = await supabase.from("goods_reference").select("id, category_fr, category_ar, type_fr, type_ar").eq("active", true).order("category_fr");
+      return data || [];
+    },
+  });
+
+  const violationOptions: AutocompleteOption[] = (violationRefs || []).map(v => ({
+    id: v.id, label: v.label_ar || v.label_fr, sublabel: v.category || undefined,
+  }));
+
+  const goodsCategoryOptions: AutocompleteOption[] = Array.from(
+    new Map((goodsRefs || []).map(g => [g.category_ar || g.category_fr, { category: g.category_ar || g.category_fr }])).values()
+  ).map((g, idx) => ({ id: `cat-${idx}`, label: g.category }));
+
+  const getGoodsTypeOptions = (categoryLabel: string): AutocompleteOption[] => {
+    if (!categoryLabel.trim()) return (goodsRefs || []).filter(g => g.type_ar || g.type_fr).map(g => ({
+      id: g.id, label: g.type_ar || g.type_fr || '', sublabel: g.category_ar || g.category_fr,
+    }));
+    return (goodsRefs || [])
+      .filter(g => (g.category_ar === categoryLabel || g.category_fr === categoryLabel) && (g.type_ar || g.type_fr))
+      .map(g => ({ id: g.id, label: g.type_ar || g.type_fr || '', sublabel: g.category_ar || g.category_fr }));
+  };
+
+  const refreshAllRefs = async () => {
+    await Promise.all([refetchViolationRefs(), refetchGoodsRefs()]);
+  };
+
   // Load PV data
   const { data: pv, isLoading } = useQuery({
     queryKey: ["pv-edit", id],
