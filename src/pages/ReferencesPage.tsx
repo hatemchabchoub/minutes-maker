@@ -160,7 +160,7 @@ export default function ReferencesPage() {
 
   const officerColumnsWithRefs = officerColumns.map((c) => {
     if (c.key === "department_id") return { ...c, options: deptOptions, hidden: false };
-    if (c.key === "auth_user_id") return { ...c, options: [{ value: "", label: "— بدون ربط —" }, ...profileOptions] };
+    if (c.key === "auth_user_id") return { ...c, options: [{ value: "none", label: "— بدون ربط —" }, ...profileOptions] };
     return c;
   });
 
