@@ -71,10 +71,6 @@ const PvWizardPage = () => {
   const [pvType, setPvType] = useState("");
   const [parentPvId, setParentPvId] = useState("");
   const [notes, setNotes] = useState("");
-  const [customsViolation, setCustomsViolation] = useState(false);
-  const [currencyViolation, setCurrencyViolation] = useState(false);
-  const [publicLawViolation, setPublicLawViolation] = useState(false);
-  const [seizureRenewal, setSeizureRenewal] = useState(false);
 
   const [offenders, setOffenders] = useState<Offender[]>([emptyOffender()]);
   const [violations, setViolations] = useState<Violation[]>([emptyViolation()]);
