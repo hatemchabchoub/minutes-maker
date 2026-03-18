@@ -179,10 +179,6 @@ const PvEditPage = () => {
       setPvType(pv.pv_type || "");
       setParentPvId((pv as any).parent_pv_id || "");
       setNotes(pv.notes || "");
-      setCustomsViolation(pv.customs_violation || false);
-      setCurrencyViolation(pv.currency_violation || false);
-      setPublicLawViolation(pv.public_law_violation || false);
-      setSeizureRenewal(pv.seizure_renewal || false);
     }
   }, [pv]);
 
