@@ -19,7 +19,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  FilePlus, Search, Download, Eye, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
+  FilePlus, Search, Download, Eye, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Printer,
 } from "lucide-react";
 import { exportPvToExcel } from "@/lib/excel-export";
 
