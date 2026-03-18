@@ -836,6 +836,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_user_roles: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _target_user_id: string
+        }
+        Returns: undefined
+      }
       get_user_department: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
