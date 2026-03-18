@@ -160,13 +160,13 @@ export default function ReferencesPage() {
 
   const officerColumnsWithRefs = officerColumns.map((c) => {
     if (c.key === "department_id") return { ...c, options: deptOptions, hidden: false };
-    if (c.key === "auth_user_id") return { ...c, options: [{ value: "", label: "— بدون ربط —" }, ...profileOptions] };
+    if (c.key === "auth_user_id") return { ...c, options: [{ value: "none", label: "— بدون ربط —" }, ...profileOptions] };
     return c;
   });
 
   // Custom officer add/update that also assigns role
   const handleOfficerAdd = async (item: Record<string, any>) => {
-    const authUserId = item.auth_user_id || null;
+    const authUserId = (item.auth_user_id && item.auth_user_id !== "none") ? item.auth_user_id : null;
     const fonction = item.fonction || null;
     await officers.add({ ...item, auth_user_id: authUserId || null });
     if (authUserId && fonction) {
@@ -175,7 +175,7 @@ export default function ReferencesPage() {
   };
 
   const handleOfficerUpdate = async (id: string, item: Record<string, any>) => {
-    const authUserId = item.auth_user_id || null;
+    const authUserId = (item.auth_user_id && item.auth_user_id !== "none") ? item.auth_user_id : null;
     const fonction = item.fonction || null;
     await officers.update(id, { ...item, auth_user_id: authUserId || null });
     if (authUserId && fonction) {
