@@ -3,6 +3,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, UserCheck, AlertTriangle, Package, PhoneForwarded } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReferenceTable, type ColumnDef } from "@/components/references/ReferenceTable";
+import { toast } from "sonner";
+
+type AppRole = "admin" | "national_supervisor" | "department_supervisor" | "officer" | "viewer";
+
+const ROLE_LABELS: Record<AppRole, string> = {
+  admin: "مدير",
+  national_supervisor: "مشرف وطني",
+  department_supervisor: "مشرف قسم",
+  officer: "ضابط",
+  viewer: "مطالع",
+};
+
+const ALL_ROLES: AppRole[] = ["admin", "national_supervisor", "department_supervisor", "officer", "viewer"];
+
+const FONCTION_OPTIONS = [
+  { value: "رئيس فرقة", label: "رئيس فرقة" },
+  { value: "مفتش", label: "مفتش" },
+  { value: "عون", label: "عون" },
+  { value: "رئيس مكتب", label: "رئيس مكتب" },
+  { value: "رئيس قسم", label: "رئيس قسم" },
+  { value: "مراقب", label: "مراقب" },
+  { value: "ضابط صف", label: "ضابط صف" },
+];
 
 function useReferenceData(table: string) {
   const [data, setData] = useState<any[]>([]);
@@ -61,8 +84,9 @@ const officerColumns: ColumnDef[] = [
   { key: "full_name", label: "الاسم الكامل", required: true },
   { key: "badge_number", label: "رقم الشارة" },
   { key: "rank_label", label: "الرتبة" },
+  { key: "fonction", label: "الوظيفة", type: "select", options: FONCTION_OPTIONS },
   { key: "department_id", label: "القسم", type: "select", hidden: true },
-  
+  { key: "auth_user_id", label: "حساب المستخدم", type: "select" },
   { key: "active", label: "الحالة", type: "boolean" },
 ];
 
@@ -93,6 +117,24 @@ const referralColumns: ColumnDef[] = [
   { key: "active", label: "الحالة", type: "boolean" },
 ];
 
+// Map officer fonction to system role
+function fonctionToRole(fonction: string): AppRole {
+  switch (fonction) {
+    case "رئيس قسم":
+      return "department_supervisor";
+    case "رئيس مكتب":
+    case "رئيس فرقة":
+      return "department_supervisor";
+    case "مفتش":
+    case "مراقب":
+      return "national_supervisor";
+    case "عون":
+    case "ضابط صف":
+    default:
+      return "officer";
+  }
+}
+
 export default function ReferencesPage() {
   const departments = useReferenceData("departments");
   const officers = useReferenceData("officers");
@@ -100,17 +142,62 @@ export default function ReferencesPage() {
   const goods = useReferenceData("goods_reference");
   const referrals = useReferenceData("referral_sources");
 
+  // Fetch profiles for user linking
+  const [profiles, setProfiles] = useState<any[]>([]);
+  useEffect(() => {
+    supabase.from("profiles").select("auth_user_id, full_name, email").eq("active", true).then(({ data }) => {
+      setProfiles(data || []);
+    });
+  }, []);
+
+  const profileOptions = profiles.map((p) => ({
+    value: p.auth_user_id,
+    label: `${p.full_name || p.email} (${p.email || ""})`,
+  }));
+
   // Populate department select options for officers
   const deptOptions = departments.data.map((d) => ({ value: d.id, label: d.name_ar || d.name_fr }));
 
   const officerColumnsWithRefs = officerColumns.map((c) => {
     if (c.key === "department_id") return { ...c, options: deptOptions, hidden: false };
+    if (c.key === "auth_user_id") return { ...c, options: [{ value: "", label: "— بدون ربط —" }, ...profileOptions] };
     return c;
   });
 
+  // Custom officer add/update that also assigns role
+  const handleOfficerAdd = async (item: Record<string, any>) => {
+    const authUserId = item.auth_user_id || null;
+    const fonction = item.fonction || null;
+    await officers.add({ ...item, auth_user_id: authUserId || null });
+    if (authUserId && fonction) {
+      await assignRoleFromFonction(authUserId, fonction);
+    }
+  };
+
+  const handleOfficerUpdate = async (id: string, item: Record<string, any>) => {
+    const authUserId = item.auth_user_id || null;
+    const fonction = item.fonction || null;
+    await officers.update(id, { ...item, auth_user_id: authUserId || null });
+    if (authUserId && fonction) {
+      await assignRoleFromFonction(authUserId, fonction);
+    }
+  };
+
+  const assignRoleFromFonction = async (authUserId: string, fonction: string) => {
+    const role = fonctionToRole(fonction);
+    try {
+      // Remove existing roles, then assign the new one
+      await supabase.from("user_roles").delete().eq("user_id", authUserId);
+      await supabase.from("user_roles").insert({ user_id: authUserId, role });
+      toast.success(`تم تعيين دور "${ROLE_LABELS[role]}" للمستخدم تلقائياً`);
+    } catch (err: any) {
+      toast.error("خطأ في تعيين الدور: " + (err.message || ""));
+    }
+  };
+
   const tabs = [
     { id: "departments", label: "الأقسام", icon: Building2, content: <ReferenceTable {...departments} columns={departmentColumns} onAdd={departments.add} onUpdate={departments.update} onDelete={departments.remove} /> },
-    { id: "officers", label: "الضباط", icon: UserCheck, content: <ReferenceTable {...officers} columns={officerColumnsWithRefs} onAdd={officers.add} onUpdate={officers.update} onDelete={officers.remove} /> },
+    { id: "officers", label: "الضباط", icon: UserCheck, content: <ReferenceTable {...officers} columns={officerColumnsWithRefs} onAdd={handleOfficerAdd} onUpdate={handleOfficerUpdate} onDelete={officers.remove} /> },
     { id: "violations", label: "المخالفات", icon: AlertTriangle, content: <ReferenceTable {...violations} columns={violationColumns} onAdd={violations.add} onUpdate={violations.update} onDelete={violations.remove} /> },
     { id: "goods", label: "البضائع", icon: Package, content: <ReferenceTable {...goods} columns={goodsColumns} onAdd={goods.add} onUpdate={goods.update} onDelete={goods.remove} /> },
     { id: "referrals", label: "مصادر الإحالة", icon: PhoneForwarded, content: <ReferenceTable {...referrals} columns={referralColumns} onAdd={referrals.add} onUpdate={referrals.update} onDelete={referrals.remove} /> },
