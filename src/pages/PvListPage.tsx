@@ -256,7 +256,7 @@ const PvListPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-10">
+              <TableHead className="w-10 no-print-col">
                 <Checkbox
                   checked={allOnPageSelected}
                   onCheckedChange={toggleSelectAll}
