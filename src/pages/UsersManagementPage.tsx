@@ -200,8 +200,20 @@ export default function UsersManagementPage() {
     const matchingFonction = fonctions?.find((f) => f.mapped_role === userRole);
     setSelectedFonction(matchingFonction?.id || "");
     setSelectedDept(user.department_id || "");
+    setSelectedUnit(user.unit_id || "");
+    setSelectedRoles([...user.roles]);
     setUserActive(user.active !== false);
   };
+
+  const toggleRole = (role: AppRole) => {
+    setSelectedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
+  };
+
+  const filteredUnits = units?.filter(
+    (u) => !selectedDept || selectedDept === "none" || u.department_id === selectedDept
+  );
 
   const handleSave = () => {
     if (!editUser) return;
