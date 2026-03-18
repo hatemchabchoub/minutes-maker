@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, UserCheck, AlertTriangle, Package, PhoneForwarded } from "lucide-react";
+import { Building2, UserCheck, AlertTriangle, Package, PhoneForwarded, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReferenceTable, type ColumnDef } from "@/components/references/ReferenceTable";
 import { toast } from "sonner";
