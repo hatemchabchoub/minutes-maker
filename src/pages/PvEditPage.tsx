@@ -224,8 +224,14 @@ const PvEditPage = () => {
   const updateViolation = (i: number, field: keyof ViolationRow, value: string) => {
     const u = [...violations]; u[i] = { ...u[i], [field]: value }; setViolations(u);
   };
+  const updateViolationMulti = (i: number, fields: Partial<ViolationRow>) => {
+    const u = [...violations]; u[i] = { ...u[i], ...fields }; setViolations(u);
+  };
   const updateSeizure = (i: number, field: keyof SeizureRow, value: string) => {
     const u = [...seizures]; u[i] = { ...u[i], [field]: value }; setSeizures(u);
+  };
+  const updateSeizureMulti = (i: number, fields: Partial<SeizureRow>) => {
+    const u = [...seizures]; u[i] = { ...u[i], ...fields }; setSeizures(u);
   };
   const markDeletedOffender = (i: number) => {
     if (offenders[i].id) {
