@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -25,7 +24,13 @@ const ROLE_LABELS: Record<AppRole, string> = {
   viewer: "مطالع",
 };
 
-const ALL_ROLES: AppRole[] = ["admin", "national_supervisor", "department_supervisor", "officer", "viewer"];
+interface FonctionRow {
+  id: string;
+  label_ar: string;
+  label_fr: string | null;
+  mapped_role: string | null;
+  active: boolean | null;
+}
 
 interface UserRow {
   id: string;
@@ -43,9 +48,23 @@ export default function UsersManagementPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState<UserRow | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<AppRole[]>([]);
+  const [selectedFonction, setSelectedFonction] = useState<string>("");
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [userActive, setUserActive] = useState(true);
+
+  // Fetch fonctions (dynamic roles)
+  const { data: fonctions } = useQuery({
+    queryKey: ["fonctions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fonctions")
+        .select("id, label_ar, label_fr, mapped_role, active")
+        .eq("active", true)
+        .order("label_ar");
+      if (error) throw error;
+      return data as FonctionRow[];
+    },
+  });
 
   // Fetch departments
   const { data: departments } = useQuery({
@@ -146,25 +165,24 @@ export default function UsersManagementPage() {
 
   const openEdit = (user: UserRow) => {
     setEditUser(user);
-    setSelectedRoles([...user.roles]);
+    // Find the fonction that matches the user's current role
+    const userRole = user.roles[0];
+    const matchingFonction = fonctions?.find((f) => f.mapped_role === userRole);
+    setSelectedFonction(matchingFonction?.id || "");
     setSelectedDept(user.department_id || "");
     setUserActive(user.active !== false);
   };
 
   const handleSave = () => {
     if (!editUser) return;
+    const selectedFonctionData = fonctions?.find((f) => f.id === selectedFonction);
+    const mappedRole = (selectedFonctionData?.mapped_role as AppRole) || "officer";
     saveMutation.mutate({
       user: editUser,
-      roles: selectedRoles,
+      roles: [mappedRole],
       departmentId: selectedDept === "none" ? null : selectedDept || null,
       active: userActive,
     });
-  };
-
-  const toggleRole = (role: AppRole) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
   };
 
   const filtered = (users || []).filter((u) => {
@@ -307,26 +325,32 @@ export default function UsersManagementPage() {
                 </Select>
               </div>
 
-              {/* Roles */}
-              <div className="space-y-3">
-                <Label>الأدوار</Label>
-                <div className="space-y-2">
-                  {ALL_ROLES.map((role) => (
-                    <label
-                      key={role}
-                      className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={selectedRoles.includes(role)}
-                        onCheckedChange={() => toggleRole(role)}
-                      />
-                      <div>
-                        <span className="text-sm font-medium">{ROLE_LABELS[role]}</span>
-                        <span className="text-xs text-muted-foreground me-2">({role})</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
+              {/* الوظيفة (Fonction → Role) */}
+              <div className="space-y-2">
+                <Label>الوظيفة</Label>
+                <Select value={selectedFonction} onValueChange={setSelectedFonction}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختيار الوظيفة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— بدون وظيفة —</SelectItem>
+                    {fonctions?.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.label_ar}
+                        {f.mapped_role && (
+                          <span className="text-muted-foreground text-xs ms-2">
+                            ({ROLE_LABELS[f.mapped_role as AppRole] || f.mapped_role})
+                          </span>
+                        )}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedFonction && selectedFonction !== "none" && (
+                  <p className="text-xs text-muted-foreground">
+                    الدور المرتبط: {ROLE_LABELS[(fonctions?.find(f => f.id === selectedFonction)?.mapped_role as AppRole)] || "ضابط"}
+                  </p>
+                )}
               </div>
             </div>
           )}
