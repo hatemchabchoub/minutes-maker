@@ -16,6 +16,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {children}
             </div>
           </main>
+          <footer className="shrink-0 px-4 py-2 text-center text-[10px] text-muted-foreground/60 border-t border-border/30">
+            © {new Date().getFullYear()} العقيد حاتم شبشوب — إدارة الأبحاث الديوانية · النسخة v1.11 beta 2026
+          </footer>
         </div>
       </div>
     </SidebarProvider>

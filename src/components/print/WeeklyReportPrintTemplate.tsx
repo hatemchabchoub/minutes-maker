@@ -216,7 +216,7 @@ export default function WeeklyReportPrintTemplate({ periodLabel, departmentName,
         {/* Footer */}
         <div style={{ marginTop: "20pt", paddingTop: "4pt", borderTop: "0.5pt solid #999", fontSize: "6.5pt", color: "#888", display: "flex", justifyContent: "space-between" }}>
           <span>طبع بتاريخ: {new Date().toLocaleDateString("fr-TN")}</span>
-          <span>النظام الآلي لمتابعة المحاضر — Système SIGMAP</span>
+          <span>© {new Date().getFullYear()} العقيد حاتم شبشوب — إدارة الأبحاث الديوانية · v1.11 beta 2026</span>
         </div>
       </div>
     </div>
