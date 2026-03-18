@@ -168,12 +168,17 @@ const PvWizardPage = () => {
   }));
 
   const goodsCategoryOptions: AutocompleteOption[] = Array.from(
-    new Map((goodsRefs || []).map(g => [g.category_ar || g.category_fr, g])).values()
-  ).map(g => ({ id: g.id, label: g.category_ar || g.category_fr }));
+    new Map((goodsRefs || []).map(g => [g.category_ar || g.category_fr, { category: g.category_ar || g.category_fr }])).values()
+  ).map((g, idx) => ({ id: `cat-${idx}`, label: g.category }));
 
-  const goodsTypeOptions: AutocompleteOption[] = (goodsRefs || []).map(g => ({
-    id: g.id, label: g.type_ar || g.type_fr || g.category_ar || g.category_fr, sublabel: g.category_ar || g.category_fr,
-  }));
+  const getGoodsTypeOptions = (categoryLabel: string): AutocompleteOption[] => {
+    if (!categoryLabel.trim()) return (goodsRefs || []).filter(g => g.type_ar || g.type_fr).map(g => ({
+      id: g.id, label: g.type_ar || g.type_fr || '', sublabel: g.category_ar || g.category_fr,
+    }));
+    return (goodsRefs || [])
+      .filter(g => (g.category_ar === categoryLabel || g.category_fr === categoryLabel) && (g.type_ar || g.type_fr))
+      .map(g => ({ id: g.id, label: g.type_ar || g.type_fr || '', sublabel: g.category_ar || g.category_fr }));
+  };
 
   const [referralSourceLabel, setReferralSourceLabel] = useState("");
 
