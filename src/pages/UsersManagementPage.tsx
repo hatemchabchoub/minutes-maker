@@ -190,12 +190,12 @@ export default function UsersManagementPage() {
           </p>
         </div>
         <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="بحث بالاسم أو البريد..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pr-9 w-64"
+            className="pe-9 w-64"
           />
         </div>
       </div>
