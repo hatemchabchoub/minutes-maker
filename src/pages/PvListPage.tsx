@@ -298,7 +298,7 @@ const PvListPage = () => {
             ) : (
               groupedPvs.map(({ pv, isChild, childCount }) => (
                 <TableRow key={pv.id} className={`${selectedIds.has(pv.id) ? "bg-muted/50" : ""} ${isChild ? "bg-muted/20" : ""}`}>
-                  <TableCell>
+                  <TableCell className="no-print-col">
                     <Checkbox
                       checked={selectedIds.has(pv.id)}
                       onCheckedChange={() => toggleSelect(pv.id)}
