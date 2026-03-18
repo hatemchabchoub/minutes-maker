@@ -155,10 +155,17 @@ const PvListPage = () => {
   const { data: officers } = useQuery({
     queryKey: ["officers-list"],
     queryFn: async () => {
-      const { data } = await supabase.from("officers").select("id, full_name").eq("active", true).order("full_name");
+      const { data } = await supabase.from("officers").select("id, full_name, department_id").eq("active", true).order("full_name");
       return data || [];
     },
   });
+
+  // Filter officers by selected department
+  const filteredOfficers = useMemo(() => {
+    if (!officers) return [];
+    if (deptFilter === "all") return officers;
+    return officers.filter(o => o.department_id === deptFilter);
+  }, [officers, deptFilter]);
 
   const { data: pvData, isLoading } = useQuery({
     queryKey: ["pv-list", page, statusFilter, typeFilter, deptFilter, officerFilter, search, sortCol, sortDir, user?.id, profile?.department_id, roles],
