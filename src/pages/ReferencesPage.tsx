@@ -116,23 +116,6 @@ const referralColumns: ColumnDef[] = [
   { key: "active", label: "الحالة", type: "boolean" },
 ];
 
-// Map officer fonction to system role
-function fonctionToRole(fonction: string): AppRole {
-  switch (fonction) {
-    case "رئيس قسم":
-      return "department_supervisor";
-    case "رئيس مكتب":
-    case "رئيس فرقة":
-      return "department_supervisor";
-    case "مفتش":
-    case "مراقب":
-      return "national_supervisor";
-    case "عون":
-    case "ضابط صف":
-    default:
-      return "officer";
-  }
-}
 
 export default function ReferencesPage() {
   const departments = useReferenceData("departments");
