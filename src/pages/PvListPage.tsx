@@ -340,7 +340,7 @@ const PvListPage = () => {
                   <TableCell className="text-end font-mono text-sm">{formatCurrency(pv.total_precautionary_seizure || 0)}</TableCell>
                   <TableCell className="text-end font-mono text-sm font-semibold">{formatCurrency(pv.total_seizure || 0)}</TableCell>
                   <TableCell><StatusBadge status={pv.case_status as CaseStatus} /></TableCell>
-                  <TableCell>
+                  <TableCell className="no-print-col">
                     <div className="flex items-center gap-1">
                       <Link to={`/pv/${pv.id}`}><Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button></Link>
                       <Link to={`/pv/${pv.id}/edit`}><Button variant="ghost" size="icon" className="h-7 w-7"><Pencil className="h-3.5 w-3.5" /></Button></Link>
