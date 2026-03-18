@@ -169,6 +169,8 @@ const DashboardPage = () => {
   const stats = useMemo(() => {
     if (!pvData) return null;
     const totalPv = pvData.length;
+    const parentPvCount = pvData.filter((p: any) => !p.parent_pv_id).length;
+    const subPvCount = pvData.filter((p: any) => !!p.parent_pv_id).length;
     const totalSeizure = pvData.reduce((s, p: any) => s + (Number(p.total_seizure) || 0), 0);
     const totalActual = pvData.reduce((s, p: any) => s + (Number(p.total_actual_seizure) || 0), 0);
     const totalVirtual = pvData.reduce((s, p: any) => s + (Number(p.total_virtual_seizure) || 0), 0);
@@ -181,7 +183,7 @@ const DashboardPage = () => {
     const seizureTrend = prevSeizure > 0 ? ((totalSeizure - prevSeizure) / prevSeizure * 100) : null;
 
     return {
-      totalPv, totalSeizure, totalActual, totalVirtual, totalPrecautionary,
+      totalPv, parentPvCount, subPvCount, totalSeizure, totalActual, totalVirtual, totalPrecautionary,
       pvTrend, seizureTrend,
     };
   }, [pvData, prevPvData]);
