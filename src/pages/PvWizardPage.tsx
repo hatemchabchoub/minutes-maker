@@ -77,9 +77,30 @@ const PvWizardPage = () => {
   const [seizures, setSeizures] = useState<Seizure[]>([emptySeizure()]);
 
   useEffect(() => {
+    let p: any = null;
+    let importId: string | null = null;
+
+    // Check location.state first (normal navigation)
     const state = location.state as any;
     if (state?.prefill) {
-      const p = state.prefill;
+      p = state.prefill;
+      importId = state.importId || null;
+    }
+    
+    // Check sessionStorage (opened from new tab via OCR page)
+    if (!p) {
+      const stored = sessionStorage.getItem("pv_prefill");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          p = parsed.prefill;
+          importId = parsed.importId || null;
+        } catch { /* ignore */ }
+        sessionStorage.removeItem("pv_prefill");
+      }
+    }
+
+    if (p) {
       if (p.pv_number) setPvNumber(p.pv_number);
       if (p.pv_date) setPvDate(p.pv_date);
       if (p.pv_type) setPvType(p.pv_type);
@@ -104,7 +125,7 @@ const PvWizardPage = () => {
           estimated_value: String(s.estimated_value || ""), seizure_type: s.seizure_type || "actual",
         })));
       }
-      if (state.importId) setSourceImportId(state.importId);
+      if (importId) setSourceImportId(importId);
       toast.success("تم ملء البيانات تلقائيا من الاستخراج");
     }
   }, [location.state]);
