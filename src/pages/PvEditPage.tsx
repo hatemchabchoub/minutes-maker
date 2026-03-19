@@ -14,6 +14,7 @@ import {
 import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import ParentPvSelector from "@/components/pv/ParentPvSelector";
+import OcrCompareDialog from "@/components/pv/OcrCompareDialog";
 import { AutocompleteWithAdd, AutocompleteOption } from "@/components/ui/autocomplete-with-add";
 
 interface OffenderRow {
@@ -331,6 +332,54 @@ const PvEditPage = () => {
     }
   };
 
+  const handleOcrApply = (data: Record<string, any>) => {
+    if (data.pv_number) setPvNumber(data.pv_number);
+    if (data.pv_date) setPvDate(data.pv_date);
+    if (data.pv_type) setPvType(data.pv_type);
+    if (data.referral_type) setReferralType(data.referral_type);
+    if (data.notes) setNotes(data.notes);
+    // Map department_name to department_id
+    if (data.department_name && departments) {
+      const dept = departments.find(d => d.name_ar === data.department_name || d.name_fr === data.department_name);
+      if (dept) setDepartmentId(dept.id);
+    }
+    // Map officer_name to officer_id
+    if (data.officer_name && officers) {
+      const off = officers.find(o => o.full_name === data.officer_name);
+      if (off) setOfficerId(off.id);
+    }
+    // Arrays
+    if (data.offenders) {
+      setOffenders(data.offenders.map((o: any) => ({
+        name_or_company: o.name_or_company || "", identifier: o.identifier || "",
+        person_type: o.person_type || "physical", city: o.city || "", address: o.address || "",
+      })));
+    }
+    if (data.violations) {
+      setViolations(data.violations.map((v: any) => ({
+        violation_label: v.violation_label || "", violation_category: v.violation_category || "",
+        legal_basis: v.legal_basis || "", severity_level: "",
+      })));
+    }
+    if (data.seizures) {
+      setSeizures(data.seizures.map((s: any) => ({
+        goods_category: s.goods_category || "", goods_type: s.goods_type || "",
+        quantity: String(s.quantity || 0), unit: s.unit || "",
+        estimated_value: String(s.estimated_value || 0), seizure_type: s.seizure_type || "actual",
+      })));
+    }
+  };
+
+  const ocrCurrentData = {
+    pv_number: pvNumber, pv_date: pvDate,
+    department_name: departments?.find(d => d.id === departmentId)?.name_ar || departments?.find(d => d.id === departmentId)?.name_fr || "",
+    officer_name: officers?.find(o => o.id === officerId)?.full_name || "",
+    referral_type: referralType, pv_type: pvType, notes,
+    offenders: offenders.filter(o => !o._deleted).map(o => ({ name_or_company: o.name_or_company, identifier: o.identifier, person_type: o.person_type, city: o.city })),
+    violations: violations.filter(v => !v._deleted).map(v => ({ violation_label: v.violation_label, violation_category: v.violation_category, legal_basis: v.legal_basis })),
+    seizures: seizures.filter(s => !s._deleted).map(s => ({ goods_category: s.goods_category, goods_type: s.goods_type, quantity: s.quantity, unit: s.unit, estimated_value: s.estimated_value, seizure_type: s.seizure_type })),
+  };
+
   if (isLoading) {
     return <div className="p-6 text-center text-muted-foreground">جاري التحميل...</div>;
   }
@@ -339,14 +388,17 @@ const PvEditPage = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Link to={`/pv/${id}`}>
-          <Button variant="ghost" size="icon" className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button>
-        </Link>
-        <div>
-          <h1 className="text-xl font-semibold">تعديل المحضر</h1>
-          <p className="text-sm text-muted-foreground font-mono-data">{pv?.internal_reference}</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link to={`/pv/${id}`}>
+            <Button variant="ghost" size="icon" className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button>
+          </Link>
+          <div>
+            <h1 className="text-xl font-semibold">تعديل المحضر</h1>
+            <p className="text-sm text-muted-foreground font-mono-data">{pv?.internal_reference}</p>
+          </div>
         </div>
+        <OcrCompareDialog currentData={ocrCurrentData} onApply={handleOcrApply} />
       </div>
 
       {/* General Info */}
