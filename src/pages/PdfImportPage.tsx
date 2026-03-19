@@ -13,63 +13,33 @@ import {
 } from "@/components/ui/table";
 import {
   Upload, FileText, Loader2, CheckCircle2, XCircle, AlertTriangle,
-  Eye, RotateCcw, ArrowRight, Shield,
+  Eye, RotateCcw, ArrowRight, Shield, Plus, ChevronLeft, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import PdfFileReview from "@/components/pdf-import/PdfFileReview";
 
-type Stage = "upload" | "processing" | "review" | "prefill";
-
-const confidenceColor = (score: number) => {
-  if (score >= 80) return "bg-primary/10 text-primary border-primary/20";
-  if (score >= 50) return "bg-accent/10 text-accent-foreground border-accent/20";
-  return "bg-destructive/10 text-destructive border-destructive/20";
-};
-
-const confidenceLabel = (score: number) => {
-  if (score >= 80) return "عالية";
-  if (score >= 50) return "متوسطة";
-  return "ضعيفة";
-};
-
-const FIELD_LABELS: Record<string, string> = {
-  pv_number: "عدد المحضر",
-  pv_date: "التاريخ",
-  department_name: "القسم",
-  officer_name: "الضابط",
-  officer_badge: "الرقم",
-  officer_rank: "الرتبة",
-  referral_type: "طبيعة الإحالة",
-  referral_source: "مصدر الإحالة",
-  pv_type: "محضر/ضلع",
-  customs_violation: "مخالفة ديوانية",
-  currency_violation: "مخالفة صرفية",
-  public_law_violation: "حق عام",
-  seizure_renewal: "تجديد حجز",
-  total_actual_seizure: "المحجوز الفعلي",
-  total_virtual_seizure: "المحجوز الصوري",
-  total_precautionary_seizure: "المحجوز التحفظي",
-  notes: "ملاحظات",
-  offenders: "المخالفون",
-  violations: "المخالفات",
-  seizures: "المحجوزات",
+export type FileImportItem = {
+  id: string;
+  file: File;
+  fileName: string;
+  status: "queued" | "uploading" | "processing" | "extracted" | "error" | "validated";
+  importId: string | null;
+  extractedData: any;
+  confidenceData: any;
+  overallConfidence: number;
+  fieldCandidates: any[];
+  editedValues: Record<string, string>;
+  errorMessage?: string;
 };
 
 const PdfImportPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [stage, setStage] = useState<Stage>("upload");
-  const [importId, setImportId] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [extracting, setExtracting] = useState(false);
-  const [fileName, setFileName] = useState("");
 
-  // Extracted data for review
-  const [extractedData, setExtractedData] = useState<any>(null);
-  const [confidenceData, setConfidenceData] = useState<any>({});
-  const [overallConfidence, setOverallConfidence] = useState(0);
-  const [fieldCandidates, setFieldCandidates] = useState<any[]>([]);
-  const [editedValues, setEditedValues] = useState<Record<string, string>>({});
+  const [files, setFiles] = useState<FileImportItem[]>([]);
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Recent imports
   const { data: recentImports } = useQuery({
@@ -85,30 +55,63 @@ const PdfImportPage = () => {
     },
   });
 
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+  const handleFilesSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (!selectedFiles || selectedFiles.length === 0) return;
 
     const allowed = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) {
-      toast.error("صيغة غير مدعومة. استخدم PDF أو JPG أو PNG.");
-      return;
+    const newItems: FileImportItem[] = [];
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      if (!allowed.includes(file.type)) {
+        toast.error(`${file.name}: صيغة غير مدعومة`);
+        continue;
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error(`${file.name}: الملف كبير جدا (الحد الأقصى 20 ميقا)`);
+        continue;
+      }
+      newItems.push({
+        id: crypto.randomUUID(),
+        file,
+        fileName: file.name,
+        status: "queued",
+        importId: null,
+        extractedData: null,
+        confidenceData: {},
+        overallConfidence: 0,
+        fieldCandidates: [],
+        editedValues: {},
+      });
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error("الملف كبير جدا (الحد الأقصى 20 ميقا)");
-      return;
+    if (newItems.length > 0) {
+      setFiles((prev) => [...prev, ...newItems]);
+      toast.success(`تمت إضافة ${newItems.length} ملف(ات)`);
     }
 
-    setUploading(true);
-    setFileName(file.name);
+    // Reset input
+    e.target.value = "";
+  }, []);
+
+  const processFile = useCallback(async (fileId: string) => {
+    if (!user) return;
+
+    setFiles((prev) =>
+      prev.map((f) => (f.id === fileId ? { ...f, status: "uploading" } : f))
+    );
+    setProcessingId(fileId);
+
+    const fileItem = files.find((f) => f.id === fileId);
+    if (!fileItem) return;
 
     try {
       // Upload to storage
-      const storagePath = `ocr-imports/${user.id}/${Date.now()}_${file.name}`;
+      const storagePath = `ocr-imports/${user.id}/${Date.now()}_${fileItem.fileName}`;
       const { error: uploadErr } = await supabase.storage
         .from("pv-attachments")
-        .upload(storagePath, file);
+        .upload(storagePath, fileItem.file);
       if (uploadErr) throw uploadErr;
 
       // Create import record
@@ -116,7 +119,7 @@ const PdfImportPage = () => {
         .from("document_imports")
         .insert({
           import_type: "pdf",
-          source_file_name: file.name,
+          source_file_name: fileItem.fileName,
           storage_path: storagePath,
           uploaded_by: user.id,
           status: "pending",
@@ -125,13 +128,13 @@ const PdfImportPage = () => {
         .single();
       if (importErr) throw importErr;
 
-      setImportId(importRec.id);
-      toast.success("تم تحميل الملف بنجاح");
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId ? { ...f, status: "processing", importId: importRec.id } : f
+        )
+      );
 
-      // Start extraction
-      setStage("processing");
-      setExtracting(true);
-
+      // Extract via OCR
       const { data: extractResult, error: extractErr } = await supabase.functions.invoke("ocr-extract", {
         body: { import_id: importRec.id },
       });
@@ -139,69 +142,131 @@ const PdfImportPage = () => {
       if (extractErr) throw new Error(extractErr.message);
       if (extractResult?.error) throw new Error(extractResult.error);
 
-      setExtractedData(extractResult.extracted);
-      setConfidenceData(extractResult.confidence || {});
-      setOverallConfidence(extractResult.overall_confidence || 50);
-
       // Load field candidates
       const { data: candidates } = await (supabase as any)
         .from("document_field_candidates")
         .select("*")
         .eq("import_id", importRec.id)
         .order("field_name");
-      setFieldCandidates(candidates || []);
 
-      // Pre-populate edited values
       const edits: Record<string, string> = {};
       candidates?.forEach((c: any) => {
         edits[c.field_name] = c.extracted_value || "";
       });
-      setEditedValues(edits);
 
-      setStage("review");
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId
+            ? {
+                ...f,
+                status: "extracted",
+                extractedData: extractResult.extracted,
+                confidenceData: extractResult.confidence || {},
+                overallConfidence: extractResult.overall_confidence || 50,
+                fieldCandidates: candidates || [],
+                editedValues: edits,
+              }
+            : f
+        )
+      );
+
       queryClient.invalidateQueries({ queryKey: ["recent-imports"] });
-      toast.success(`اكتمل الاستخراج — الثقة: ${extractResult.overall_confidence}%`);
+      toast.success(`${fileItem.fileName} — اكتمل الاستخراج (${extractResult.overall_confidence}%)`);
     } catch (err: any) {
-      toast.error("خطأ: " + (err.message || "خطأ غير معروف"));
-      setStage("upload");
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileId ? { ...f, status: "error", errorMessage: err.message } : f
+        )
+      );
+      toast.error(`${fileItem.fileName}: ${err.message || "خطأ غير معروف"}`);
     } finally {
-      setUploading(false);
-      setExtracting(false);
+      setProcessingId(null);
     }
-  }, [user, queryClient]);
+  }, [user, files, queryClient]);
 
-  const handlePrefill = () => {
-    // Build prefill data from edited values
-    const data = { ...extractedData };
-    Object.entries(editedValues).forEach(([key, val]) => {
-      if (key === "offenders" || key === "violations" || key === "seizures") {
+  const processAllQueued = useCallback(async () => {
+    const queued = files.filter((f) => f.status === "queued");
+    for (const f of queued) {
+      await processFile(f.id);
+    }
+  }, [files, processFile]);
+
+  const removeFile = (fileId: string) => {
+    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+    if (activeFileId === fileId) setActiveFileId(null);
+  };
+
+  const updateFileEditedValues = (fileId: string, values: Record<string, string>) => {
+    setFiles((prev) =>
+      prev.map((f) => (f.id === fileId ? { ...f, editedValues: values } : f))
+    );
+  };
+
+  const handlePrefill = (fileItem: FileImportItem) => {
+    const data = { ...fileItem.extractedData };
+    Object.entries(fileItem.editedValues).forEach(([key, val]) => {
+      if (["offenders", "violations", "seizures"].includes(key)) {
         try { data[key] = JSON.parse(val); } catch { /* keep original */ }
       } else {
         data[key] = val;
       }
     });
 
-    // Navigate to wizard with prefill data
-    navigate("/pv/new", { state: { prefill: data, importId } });
+    setFiles((prev) =>
+      prev.map((f) => (f.id === fileItem.id ? { ...f, status: "validated" } : f))
+    );
+    navigate("/pv/new", { state: { prefill: data, importId: fileItem.importId } });
     toast.success("تم ملء البيانات مسبقا في الاستمارة");
   };
 
-  const handleReset = () => {
-    setStage("upload");
-    setImportId(null);
-    setExtractedData(null);
-    setConfidenceData({});
-    setFieldCandidates([]);
-    setEditedValues({});
-    setFileName("");
+  const activeFile = files.find((f) => f.id === activeFileId);
+  const queuedCount = files.filter((f) => f.status === "queued").length;
+  const extractedCount = files.filter((f) => f.status === "extracted").length;
+  const validatedCount = files.filter((f) => f.status === "validated").length;
+
+  const statusIcon = (status: FileImportItem["status"]) => {
+    switch (status) {
+      case "queued": return <FileText className="h-4 w-4 text-muted-foreground" />;
+      case "uploading":
+      case "processing": return <Loader2 className="h-4 w-4 text-primary animate-spin" />;
+      case "extracted": return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+      case "validated": return <CheckCircle2 className="h-4 w-4 text-primary" />;
+      case "error": return <XCircle className="h-4 w-4 text-destructive" />;
+    }
   };
 
-  const scalarFields = fieldCandidates.filter(
-    (f) => !["offenders", "violations", "seizures"].includes(f.field_name)
-  );
-  const arrayFields = fieldCandidates.filter((f) =>
-    ["offenders", "violations", "seizures"].includes(f.field_name)
-  );
+  const statusLabel = (status: FileImportItem["status"]) => {
+    switch (status) {
+      case "queued": return "في الانتظار";
+      case "uploading": return "جاري التحميل";
+      case "processing": return "جاري التحليل";
+      case "extracted": return "مستخرج — بانتظار المراجعة";
+      case "validated": return "تم التحقق";
+      case "error": return "خطأ";
+    }
+  };
+
+  // If reviewing a specific file
+  if (activeFile && activeFile.status === "extracted") {
+    return (
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => setActiveFileId(null)}>
+            <ChevronLeft className="h-4 w-4" />
+            العودة للقائمة
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            مراجعة: <span className="font-medium text-foreground">{activeFile.fileName}</span>
+          </span>
+        </div>
+        <PdfFileReview
+          fileItem={activeFile}
+          onEditedValuesChange={(values) => updateFileEditedValues(activeFile.id, values)}
+          onPrefill={() => handlePrefill(activeFile)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -210,260 +275,202 @@ const PdfImportPage = () => {
           استخراج تلقائي ذكي — Smart Document Intake
         </h1>
         <p className="text-sm text-muted-foreground">
-          قم بتحميل ملف PDF أو صورة محضر لاستخراج البيانات المهيكلة تلقائيا عبر الذكاء الاصطناعي
+          قم بتحميل ملفات PDF أو صور محاضر لاستخراج البيانات المهيكلة تلقائيا عبر الذكاء الاصطناعي
         </p>
       </div>
 
-      {/* Upload Stage */}
-      {stage === "upload" && (
-        <div className="space-y-6">
-          <div className="surface-elevated p-12 flex flex-col items-center gap-4 border-2 border-dashed border-border">
-            <div className="p-4 bg-primary/10 rounded-sm">
-              <FileText className="h-10 w-10 text-primary" />
-            </div>
-            <div className="text-center">
-              <p className="font-medium">قم بتحميل وثيقة محضر</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                PDF أو JPG أو PNG — وثائق ممسوحة، استمارات رسمية، وثائق ثنائية اللغة عربي/فرنسي
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                سيقوم الذكاء الاصطناعي بتحليل الوثيقة واستخراج الحقول المهيكلة تلقائيا
-              </p>
-            </div>
-            <label className="cursor-pointer">
-              <Button asChild disabled={uploading}>
-                <span>
-                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  {uploading ? "جاري التحميل..." : "اختيار ملف"}
-                </span>
-              </Button>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.webp"
-                onChange={handleFileUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-            </label>
-          </div>
-
-          {/* Recent imports */}
-          {recentImports && recentImports.length > 0 && (
-            <div className="surface-elevated">
-              <div className="px-4 py-3 border-b">
-                <h2 className="text-sm font-medium">عمليات الاستيراد الأخيرة</h2>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                     <TableHead>الملف</TableHead>
-                     <TableHead>الحالة</TableHead>
-                     <TableHead>الثقة</TableHead>
-                     <TableHead>التاريخ</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentImports.map((imp: any) => (
-                    <TableRow key={imp.id}>
-                      <TableCell className="text-sm">{imp.source_file_name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={
-                          imp.status === "extracted" ? "border-primary/30 text-primary" :
-                          imp.status === "error" ? "border-destructive/30 text-destructive" :
-                          "border-border"
-                        }>
-                          {imp.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-mono-data text-sm">
-                        {imp.confidence_score ? `${imp.confidence_score}%` : "—"}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {imp.created_at ? new Date(imp.created_at).toLocaleDateString("ar-TN") : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+      {/* Upload area */}
+      <div className="surface-elevated p-8 flex flex-col items-center gap-4 border-2 border-dashed border-border">
+        <div className="p-4 bg-primary/10 rounded-sm">
+          <FileText className="h-10 w-10 text-primary" />
         </div>
-      )}
-
-      {/* Processing Stage */}
-      {stage === "processing" && (
-        <div className="surface-elevated p-12 flex flex-col items-center gap-6">
-          <Loader2 className="h-12 w-12 text-primary animate-spin" />
-          <div className="text-center">
-            <p className="font-medium text-lg">جاري التحليل...</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              الذكاء الاصطناعي يحلل الوثيقة «{fileName}» ويستخرج البيانات المهيكلة
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              اكتشاف حقول المحضر، المخالفين، المخالفات والمحجوزات...
-            </p>
-          </div>
-          <Progress value={extracting ? 60 : 100} className="w-full max-w-md" />
+        <div className="text-center">
+          <p className="font-medium">قم بتحميل وثائق محاضر</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            PDF أو JPG أو PNG — يمكنك تحميل عدة ملفات في نفس الوقت
+          </p>
         </div>
-      )}
+        <label className="cursor-pointer">
+          <Button asChild>
+            <span>
+              <Plus className="h-4 w-4" />
+              إضافة ملفات
+            </span>
+          </Button>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
+            onChange={handleFilesSelect}
+            className="hidden"
+            multiple
+          />
+        </label>
+      </div>
 
-      {/* Review Stage */}
-      {stage === "review" && (
+      {/* Files list */}
+      {files.length > 0 && (
         <div className="space-y-4">
-          {/* Summary bar */}
-          <div className="surface-elevated p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <FileText className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium">{fileName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {fieldCandidates.length} حقل مستخرج
-                </p>
-              </div>
-              <div className={`px-3 py-1 rounded-sm text-xs font-medium border ${confidenceColor(overallConfidence)}`}>
-                <Shield className="h-3 w-3 inline me-1" />
-                الثقة: {overallConfidence}% — {confidenceLabel(overallConfidence)}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-medium">الملفات المحملة ({files.length})</h2>
+              <div className="flex gap-2">
+                {queuedCount > 0 && (
+                  <Badge variant="outline" className="text-xs">{queuedCount} في الانتظار</Badge>
+                )}
+                {extractedCount > 0 && (
+                  <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600">{extractedCount} بانتظار المراجعة</Badge>
+                )}
+                {validatedCount > 0 && (
+                  <Badge variant="outline" className="text-xs border-primary/30 text-primary">{validatedCount} تم التحقق</Badge>
+                )}
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleReset}>
-                <RotateCcw className="h-4 w-4" />
-                وثيقة جديدة
+            {queuedCount > 0 && (
+              <Button
+                size="sm"
+                onClick={processAllQueued}
+                disabled={!!processingId}
+              >
+                {processingId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                تحليل الكل ({queuedCount})
               </Button>
-              <Button size="sm" onClick={handlePrefill}>
-                <ArrowRight className="h-4 w-4" />
-                ملء المحضر مسبقا
-              </Button>
-            </div>
+            )}
           </div>
 
-          {/* Scalar fields */}
-          <div className="surface-elevated p-6">
-            <h2 className="text-sm font-medium mb-4">الحقول المستخرجة</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {scalarFields.map((field: any) => {
-                const conf = field.confidence || 50;
-                return (
-                  <div key={field.id} className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs">
-                        {FIELD_LABELS[field.field_name] || field.field_name}
-                      </Label>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded border ${confidenceColor(conf)}`}>
-                        {conf}%
-                      </span>
-                    </div>
-                    <Input
-                      value={editedValues[field.field_name] || ""}
-                      onChange={(e) =>
-                        setEditedValues((prev) => ({ ...prev, [field.field_name]: e.target.value }))
-                      }
-                      className={conf < 50 ? "border-destructive/30" : ""}
-                    />
+          <div className="surface-elevated divide-y divide-border">
+            {files.map((fileItem) => (
+              <div
+                key={fileItem.id}
+                className={`flex items-center justify-between px-4 py-3 transition-colors ${
+                  fileItem.status === "extracted" ? "hover:bg-accent/50 cursor-pointer" : ""
+                }`}
+                onClick={() => {
+                  if (fileItem.status === "extracted") setActiveFileId(fileItem.id);
+                }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {statusIcon(fileItem.status)}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{fileItem.fileName}</p>
+                    <p className="text-xs text-muted-foreground">{statusLabel(fileItem.status)}</p>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Array fields (offenders, violations, seizures) */}
-          {arrayFields.map((field: any) => {
-            let items: any[] = [];
-            try {
-              items = JSON.parse(field.extracted_value || "[]");
-            } catch {
-              items = [];
-            }
-            const conf = field.confidence || 50;
-
-            return (
-              <div key={field.id} className="surface-elevated p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-medium">
-                    {FIELD_LABELS[field.field_name] || field.field_name} ({items.length})
-                  </h2>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded border ${confidenceColor(conf)}`}>
-                    {conf}%
-                  </span>
                 </div>
 
-                {field.field_name === "offenders" && items.length > 0 && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                         <TableHead>الاسم / الشركة</TableHead>
-                         <TableHead>المعرف</TableHead>
-                         <TableHead>النوع</TableHead>
-                         <TableHead>المدينة</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {items.map((item: any, i: number) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium">{item.name_or_company || "—"}</TableCell>
-                          <TableCell className="font-mono-data text-sm">{item.identifier || "—"}</TableCell>
-                          <TableCell>{item.person_type === "physical" ? "شخص طبيعي" : item.person_type === "legal" ? "شخص معنوي" : item.person_type || "—"}</TableCell>
-                          <TableCell>{item.city || "—"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                <div className="flex items-center gap-2 shrink-0">
+                  {fileItem.status === "extracted" && (
+                    <>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${
+                          fileItem.overallConfidence >= 80
+                            ? "border-primary/30 text-primary"
+                            : fileItem.overallConfidence >= 50
+                            ? "border-amber-500/30 text-amber-600"
+                            : "border-destructive/30 text-destructive"
+                        }`}
+                      >
+                        <Shield className="h-3 w-3 me-1" />
+                        {fileItem.overallConfidence}%
+                      </Badge>
+                      <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setActiveFileId(fileItem.id); }}>
+                        <Eye className="h-4 w-4" />
+                        مراجعة
+                      </Button>
+                      <Button size="sm" onClick={(e) => { e.stopPropagation(); handlePrefill(fileItem); }}>
+                        <ArrowRight className="h-4 w-4" />
+                        ملء المحضر
+                      </Button>
+                    </>
+                  )}
 
-                {field.field_name === "violations" && items.length > 0 && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                         <TableHead>المخالفة</TableHead>
-                         <TableHead>الصنف</TableHead>
-                         <TableHead>الأساس القانوني</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {items.map((item: any, i: number) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm">{item.violation_label || "—"}</TableCell>
-                          <TableCell>{item.violation_category || "—"}</TableCell>
-                          <TableCell className="text-xs">{item.legal_basis || "—"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                  {fileItem.status === "queued" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); processFile(fileItem.id); }}
+                      disabled={!!processingId}
+                    >
+                      {processingId === fileItem.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      تحليل
+                    </Button>
+                  )}
 
-                {field.field_name === "seizures" && items.length > 0 && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                         <TableHead>نوع البضاعة</TableHead>
-                         <TableHead className="text-end">الكمية</TableHead>
-                         <TableHead>الوحدة</TableHead>
-                         <TableHead className="text-end">القيمة</TableHead>
-                         <TableHead>نوع الحجز</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {items.map((item: any, i: number) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium">{item.goods_type || item.goods_category || "—"}</TableCell>
-                          <TableCell className="text-end font-mono-data">{item.quantity || "—"}</TableCell>
-                          <TableCell>{item.unit || "—"}</TableCell>
-                          <TableCell className="text-end font-mono-data">{item.estimated_value?.toLocaleString() || "—"}</TableCell>
-                          <TableCell className="text-xs">{item.seizure_type || "—"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                  {fileItem.status === "error" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); setFiles(prev => prev.map(f => f.id === fileItem.id ? { ...f, status: "queued" } : f)); }}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      إعادة
+                    </Button>
+                  )}
 
-                {items.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    لم يتم اكتشاف أي عنصر
-                  </p>
-                )}
+                  {fileItem.status === "validated" && (
+                    <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                      <CheckCircle2 className="h-3 w-3 me-1" />
+                      تم
+                    </Badge>
+                  )}
+
+                  {(fileItem.status === "uploading" || fileItem.status === "processing") && (
+                    <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={(e) => { e.stopPropagation(); removeFile(fileItem.id); }}
+                    disabled={fileItem.status === "uploading" || fileItem.status === "processing"}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent imports */}
+      {recentImports && recentImports.length > 0 && (
+        <div className="surface-elevated">
+          <div className="px-4 py-3 border-b">
+            <h2 className="text-sm font-medium">عمليات الاستيراد الأخيرة</h2>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>الملف</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الثقة</TableHead>
+                <TableHead>التاريخ</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentImports.map((imp: any) => (
+                <TableRow key={imp.id}>
+                  <TableCell className="text-sm">{imp.source_file_name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={
+                      imp.status === "extracted" ? "border-primary/30 text-primary" :
+                      imp.status === "error" ? "border-destructive/30 text-destructive" :
+                      "border-border"
+                    }>
+                      {imp.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono-data text-sm">
+                    {imp.confidence_score ? `${imp.confidence_score}%` : "—"}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {imp.created_at ? new Date(imp.created_at).toLocaleDateString("ar-TN") : "—"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
