@@ -447,10 +447,10 @@ const DashboardPage = () => {
           <h2 className="text-sm font-semibold mb-4">المحاضر حسب القسم</h2>
           {deptData.length > 0 ? (
             <ResponsiveContainer width="100%" height={Math.max(240, deptData.length * 44)}>
-              <BarChart data={deptData} layout="vertical" barCategoryGap="25%" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <BarChart data={deptData} layout="vertical" barCategoryGap="25%" margin={{ left: 20, right: 20, top: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 92%)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "hsl(220, 9%, 46%)" }} width={120} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "hsl(220, 9%, 46%)" }} width={160} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={customTooltipStyle} formatter={(value: number) => [value, "العدد"]} />
                 <Bar dataKey="count" radius={[0, 8, 8, 0]} name="العدد" barSize={20}>
                   {deptData.map((_, i) => (
