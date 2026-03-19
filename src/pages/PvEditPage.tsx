@@ -433,9 +433,10 @@ const PvEditPage = () => {
           </div>
           <div className="space-y-2">
             <Label>طبيعة الإحالة</Label>
-            <Select value={referralType} onValueChange={setReferralType}>
+            <Select value={referralType || "_none"} onValueChange={(v) => setReferralType(v === "_none" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="اختيار" /></SelectTrigger>
                <SelectContent>
+                 <SelectItem value="_none">— فارغ —</SelectItem>
                  <SelectItem value="internal">هياكل داخلية</SelectItem>
                  <SelectItem value="external">هياكل خارجية</SelectItem>
                  <SelectItem value="flagrante">مباشرة</SelectItem>
