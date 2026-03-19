@@ -456,15 +456,16 @@ const ReportsPage = () => {
               <div className="surface-elevated p-4 border">
                 <h2 className="text-sm font-medium mb-4">المحاضر حسب القسم (مع مقارنة)</h2>
                 {stats.byDept.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={Math.max(250, stats.byDept.length * 45)}>
-                    <BarChart data={stats.byDept.slice(0, 12)} layout="vertical" barGap={2}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" horizontal={false} />
-                      <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 4 }} />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="count" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} name="الفترة الحالية" />
-                      {prevPvData && prevPvData.length > 0 && (
+                  <div dir="ltr">
+                    <ResponsiveContainer width="100%" height={Math.max(250, stats.byDept.length * 45)}>
+                      <BarChart data={stats.byDept.slice(0, 12)} layout="vertical" barGap={2} margin={{ left: 8, right: 48, top: 5, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="name" orientation="right" tick={{ fontSize: 10 }} width={180} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 4 }} />
+                        <Legend wrapperStyle={{ fontSize: 11 }} />
+                        <Bar dataKey="count" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} name="الفترة الحالية" />
+                        {prevPvData && prevPvData.length > 0 && (
                         <Bar dataKey="prevCount" fill={CHART_COLORS[5]} radius={[0, 4, 4, 0]} name="الفترة السابقة" opacity={0.5} />
                       )}
                     </BarChart>
