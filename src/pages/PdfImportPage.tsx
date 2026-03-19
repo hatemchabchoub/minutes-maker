@@ -215,8 +215,11 @@ const PdfImportPage = () => {
     setFiles((prev) =>
       prev.map((f) => (f.id === fileItem.id ? { ...f, status: "validated" } : f))
     );
-    navigate("/pv/new", { state: { prefill: data, importId: fileItem.importId } });
-    toast.success("تم ملء البيانات مسبقا في الاستمارة");
+
+    // Store prefill data in sessionStorage and open in new tab so we keep state here
+    sessionStorage.setItem("pv_prefill", JSON.stringify({ prefill: data, importId: fileItem.importId }));
+    window.open("/pv/new?from=ocr", "_blank");
+    toast.success("تم فتح استمارة المحضر في نافذة جديدة");
   };
 
   const activeFile = files.find((f) => f.id === activeFileId);
