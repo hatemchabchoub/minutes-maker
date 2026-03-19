@@ -466,10 +466,11 @@ const ReportsPage = () => {
                         <Legend wrapperStyle={{ fontSize: 11 }} />
                         <Bar dataKey="count" fill={CHART_COLORS[0]} radius={[0, 4, 4, 0]} name="الفترة الحالية" />
                         {prevPvData && prevPvData.length > 0 && (
-                        <Bar dataKey="prevCount" fill={CHART_COLORS[5]} radius={[0, 4, 4, 0]} name="الفترة السابقة" opacity={0.5} />
-                      )}
-                    </BarChart>
-                  </ResponsiveContainer>
+                          <Bar dataKey="prevCount" fill={CHART_COLORS[5]} radius={[0, 4, 4, 0]} name="الفترة السابقة" opacity={0.5} />
+                        )}
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 ) : (
                   <div className="py-8 text-center text-sm text-muted-foreground">لا توجد بيانات</div>
                 )}
