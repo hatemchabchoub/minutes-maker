@@ -14,6 +14,7 @@ import {
 import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import ParentPvSelector from "@/components/pv/ParentPvSelector";
+import OcrCompareDialog from "@/components/pv/OcrCompareDialog";
 import { AutocompleteWithAdd, AutocompleteOption } from "@/components/ui/autocomplete-with-add";
 
 interface OffenderRow {
