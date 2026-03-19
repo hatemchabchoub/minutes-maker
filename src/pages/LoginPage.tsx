@@ -112,101 +112,66 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-gradient-animated bg-pattern relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-animated bg-pattern relative overflow-hidden">
       {/* Decorative orbs */}
       <div className="absolute top-10 left-[10%] w-80 h-80 rounded-full bg-primary/8 blur-3xl animate-pulse-soft" />
       <div className="absolute bottom-10 right-[15%] w-96 h-96 rounded-full bg-accent/6 blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-success/4 blur-3xl" />
 
-      {/* Left side - illustration (hidden on mobile) */}
-      <div className="hidden lg:flex flex-1 items-center justify-center p-12 relative">
-        <div className="max-w-md text-center space-y-6 animate-fade-in-up">
-          <img
-            src={loginIllustration}
-            alt="Customs illustration"
-            className="w-72 h-72 mx-auto object-contain animate-float drop-shadow-2xl"
-          />
-          <div className="space-y-3">
-            <h2 className="text-2xl font-bold text-foreground/90">نظام إدارة الأبحاث الديوانية</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-              منصة متكاملة لمتابعة وإدارة محاضر التحقيق الديواني بكفاءة وأمان
+      {/* Login form */}
+      <div className="w-full max-w-sm surface-glass p-8 animate-scale-in relative z-10">
+        <div className="flex flex-col items-center gap-3 mb-6">
+          <div className="relative group">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+            <img src="/logo-douane.png" alt="شعار الديوانة التونسية" className="w-28 h-28 object-contain relative z-10 transition-transform duration-500 group-hover:scale-105" />
+          </div>
+          <div className="text-center">
+            <h1 className="text-lg font-bold">إدارة الأبحاث الديوانية</h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              نظام متابعة المحاضر
             </p>
           </div>
-          <div className="flex items-center justify-center gap-6 pt-4">
-            <div className="surface-glass px-4 py-2 text-center">
-              <p className="text-lg font-bold text-primary font-mono-data">100%</p>
-              <p className="text-[10px] text-muted-foreground">رقمي</p>
-            </div>
-            <div className="surface-glass px-4 py-2 text-center">
-              <p className="text-lg font-bold text-success font-mono-data">
-                <Shield className="h-5 w-5 inline" />
-              </p>
-              <p className="text-[10px] text-muted-foreground">آمن</p>
-            </div>
-            <div className="surface-glass px-4 py-2 text-center">
-              <p className="text-lg font-bold text-accent font-mono-data">24/7</p>
-              <p className="text-[10px] text-muted-foreground">متاح</p>
-            </div>
-          </div>
         </div>
+
+        <form onSubmit={handleLogin} className="space-y-4 animate-fade-in">
+          <div className="space-y-2">
+            <Label htmlFor="login-email">البريد الإلكتروني</Label>
+            <Input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="agent@douane.gov.tn"
+              required
+              className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="login-password">كلمة المرور</Label>
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline transition-colors"
+                onClick={() => setForgotMode(true)}
+              >
+                نسيت كلمة المرور؟
+              </button>
+            </div>
+            <Input
+              id="login-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
+            />
+          </div>
+          <Button type="submit" className="w-full bg-gradient-to-l from-primary to-primary-glow hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 h-10" disabled={loading}>
+            {loading ? "جاري الدخول..." : "تسجيل الدخول"}
+          </Button>
+        </form>
       </div>
 
-      {/* Right side - login form */}
-      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="w-full max-w-sm surface-glass p-8 animate-scale-in">
-          <div className="flex flex-col items-center gap-3 mb-6">
-            <div className="relative group">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
-              <img src="/logo-douane.png" alt="شعار الديوانة التونسية" className="w-28 h-28 object-contain relative z-10 transition-transform duration-500 group-hover:scale-105" />
-            </div>
-            <div className="text-center">
-              <h1 className="text-lg font-bold">إدارة الأبحاث الديوانية</h1>
-              <p className="text-xs text-muted-foreground mt-1">
-                نظام متابعة المحاضر
-              </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4 animate-fade-in">
-            <div className="space-y-2">
-              <Label htmlFor="login-email">البريد الإلكتروني</Label>
-              <Input
-                id="login-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="agent@douane.gov.tn"
-                required
-                className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="login-password">كلمة المرور</Label>
-                <button
-                  type="button"
-                  className="text-xs text-primary hover:underline transition-colors"
-                  onClick={() => setForgotMode(true)}
-                >
-                  نسيت كلمة المرور؟
-                </button>
-              </div>
-              <Input
-                id="login-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
-              />
-            </div>
-            <Button type="submit" className="w-full bg-gradient-to-l from-primary to-primary-glow hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 h-10" disabled={loading}>
-              {loading ? "جاري الدخول..." : "تسجيل الدخول"}
-            </Button>
-          </form>
-        </div>
-      </div>
-      <footer className="absolute bottom-3 left-0 right-0 text-center text-[10px] text-muted-foreground/50">
+      <footer className="absolute bottom-4 left-0 right-0 text-center text-sm font-medium text-muted-foreground/70">
         © {new Date().getFullYear()} العقيد حاتم شبشوب — إدارة الأبحاث الديوانية · النسخة v1.11 beta 2026
       </footer>
     </div>
